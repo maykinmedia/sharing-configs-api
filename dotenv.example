@@ -1,0 +1,10 @@
+SECRET_KEY="django-insecure-hbwcifrcld9wln-m#w#rwscn(@ktf3ot_=sad^nlprhkf9pr*x"
+DB_NAME="sharing"
+DB_USER="sharing"
+#
+# For peer authentication via unix domain socket
+# these should be kept empty.
+#
+DB_PASSWORD=""
+DB_HOST=""
+DB_PORT=""
