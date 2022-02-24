@@ -117,6 +117,7 @@ INSTALLED_APPS = [
     "hijack.contrib.admin",
     # Project applications.
     "sharing.accounts",
+    "sharing.core",
     "sharing.utils",
 ]
 
