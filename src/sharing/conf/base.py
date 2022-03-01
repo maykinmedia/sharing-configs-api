@@ -115,6 +115,8 @@ INSTALLED_APPS = [
     "sniplates",
     "hijack",
     "hijack.contrib.admin",
+    "rest_framework",
+    "drf_spectacular",
     # Project applications.
     "sharing.accounts",
     "sharing.core",

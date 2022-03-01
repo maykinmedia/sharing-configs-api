@@ -18,10 +18,10 @@ maykin-django-two-factor-auth
 phonenumbers
 
 # API libraries
-# djangorestframework
-# django-extra-fields
+djangorestframework
+drf-spectacular  # api documentation
+drf-extra-fields
 # django-filter
-# drf-yasg  # api documentation
 
 # WSGI servers & monitoring - production oriented
 uwsgi
