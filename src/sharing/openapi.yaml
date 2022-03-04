@@ -27,13 +27,14 @@ paths:
       - config
       security:
       - tokenAuth: []
-      - {}
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/File'
+                type: array
+                items:
+                  $ref: '#/components/schemas/File'
           description: ''
     post:
       operationId: file_upload
@@ -63,7 +64,6 @@ paths:
         required: true
       security:
       - tokenAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -100,7 +100,6 @@ paths:
       - config
       security:
       - tokenAuth: []
-      - {}
       responses:
         '200':
           content:
