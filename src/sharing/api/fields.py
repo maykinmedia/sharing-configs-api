@@ -8,3 +8,9 @@ class AnyFileType:
 
 class AnyBase64FileField(Base64FileField):
     ALLOWED_TYPES = AnyFileType()
+
+    def get_file_extension(self, filename, decoded_file):
+        return self.parent.initial_data["filename"].rsplit(".", 1)[1]
+
+    def get_file_name(self, decoded_file):
+        return self.parent.initial_data["filename"].rsplit(".", 1)[0]

@@ -1,6 +1,6 @@
-from typing import List
 import logging
 from dataclasses import dataclass
+from typing import List
 
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.uploadedfile import SimpleUploadedFile

@@ -86,9 +86,7 @@ class FileDetailView(ConfigMixin, APIView):
             type=OpenApiTypes.STR,
             location=OpenApiParameter.PATH,
             required=True,
-            description=_(
-                "Path to the folder where the configuration file is located"
-            ),
+            description=_("Path to the folder where the configuration file is located"),
         ),
     ],
 )
@@ -101,11 +99,12 @@ class FileListView(ConfigMixin, APIView):
     )
     def post(self, request, **kwargs):
         """Upload configuration file"""
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         self.upload_file(
-            filename=serializer.data["filename"], content=serializer.data["content"]
+            filename=serializer.validated_data["filename"],
+            content=serializer.validated_data["content"].read(),
         )
 
         return Response(serializer.data)
@@ -122,7 +121,7 @@ class FileListView(ConfigMixin, APIView):
         return Response(serializer.data)
 
     def get_serializer(self, **kwargs):
-        if self.request.method == 'GET':
+        if self.request.method == "GET":
             kwargs["many"] = True
 
         return self.serializer_class(

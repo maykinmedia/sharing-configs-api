@@ -7,6 +7,9 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "sharing.core.authentication.TokenAuthentication"
     ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "sharing.core.permissions.IsTokenAuthenticated",
+    ],
     # test
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
 }

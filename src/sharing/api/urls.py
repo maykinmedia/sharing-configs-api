@@ -22,12 +22,12 @@ urlpatterns = [
                 ),
                 # API endpoints
                 path(
-                    "config/<str:slug>/folder/<str:folder>/files/<str:filename>",
+                    "config/<str:slug>/folder/<path:folder>/files/<str:filename>",
                     FileDetailView.as_view(),
                     name="file-download",
                 ),
                 path(
-                    "config/<str:slug>/folder/<str:folder>/files/",
+                    "config/<str:slug>/folder/<path:folder>/files/",
                     FileListView.as_view(),
                     name="file-list",
                 ),
