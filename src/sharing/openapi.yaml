@@ -8,16 +8,20 @@ paths:
     post:
       operationId: file_upload
       description: Upload configuration file
+      summary: File upload
       parameters:
       - in: path
         name: folder
         schema:
           type: string
+        description: Path to the folder where the configuration file is located
         required: true
       - in: path
         name: slug
         schema:
           type: string
+        description: Slug label of the client configuration. Used to define the type
+          of backend
         required: true
       tags:
       - config
@@ -28,8 +32,7 @@ paths:
               $ref: '#/components/schemas/FileContent'
         required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - tokenAuth: []
       - {}
       responses:
         '200':
@@ -38,31 +41,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/FileContent'
           description: ''
-  /api/v1/config/{slug}/folder/{folder}/files/{file}/:
+  /api/v1/config/{slug}/folder/{folder}/files/{filename}/:
     get:
       operationId: file_download
       description: Download configuration file
+      summary: File download
       parameters:
       - in: path
-        name: file
+        name: filename
         schema:
           type: string
+        description: Name of the configuration file
         required: true
       - in: path
         name: folder
         schema:
           type: string
+        description: Path to the folder where the configuration file is located
         required: true
       - in: path
         name: slug
         schema:
           type: string
+        description: Slug label of the client configuration. Used to define the type
+          of backend
         required: true
       tags:
       - config
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - tokenAuth: []
       - {}
       responses:
         '200':
@@ -92,10 +99,8 @@ components:
       - content
       - filename
   securitySchemes:
-    basicAuth:
-      type: http
-      scheme: basic
-    cookieAuth:
+    tokenAuth:
       type: apiKey
-      in: cookie
-      name: sharing_sessionid
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
