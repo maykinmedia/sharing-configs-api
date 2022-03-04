@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info:
+  title: Sharing Configurations API
+  version: 0.1.0
+  description: An API to share configuration files using different backends
+paths:
+  /api/v1/config/{slug}/folder/{folder}/files/:
+    post:
+      operationId: file_upload
+      description: Upload configuration file
+      parameters:
+      - in: path
+        name: folder
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - config
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileContent'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileContent'
+          description: ''
+  /api/v1/config/{slug}/folder/{folder}/files/{file}/:
+    get:
+      operationId: file_download
+      description: Download configuration file
+      parameters:
+      - in: path
+        name: file
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: folder
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - config
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileContent'
+          description: ''
+components:
+  schemas:
+    FileContent:
+      type: object
+      properties:
+        url:
+          type: string
+          readOnly: true
+          description: Url of the file in the Sharing Configs API
+        filename:
+          type: string
+          description: Name of the file
+          maxLength: 100
+        content:
+          type: string
+          format: uri
+          description: File content with base64 encoding
+      required:
+      - content
+      - filename
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sharing_sessionid
