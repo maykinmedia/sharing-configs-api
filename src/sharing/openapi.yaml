@@ -29,7 +29,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FileContent'
+              $ref: '#/components/schemas/File'
         required: true
       security:
       - tokenAuth: []
@@ -39,7 +39,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FileContent'
+                $ref: '#/components/schemas/File'
           description: ''
   /api/v1/config/{slug}/folder/{folder}/files/{filename}/:
     get:
@@ -74,17 +74,19 @@ paths:
       responses:
         '200':
           content:
-            application/json:
+            application/octet-stream:
               schema:
-                $ref: '#/components/schemas/FileContent'
+                type: string
+                format: binary
           description: ''
 components:
   schemas:
-    FileContent:
+    File:
       type: object
       properties:
         url:
           type: string
+          format: uri
           readOnly: true
           description: Url of the file in the Sharing Configs API
         filename:
@@ -94,6 +96,7 @@ components:
         content:
           type: string
           format: uri
+          writeOnly: true
           description: File content with base64 encoding
       required:
       - content

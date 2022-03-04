@@ -8,7 +8,8 @@ from rest_framework.views import APIView
 from sharing.core.models import ClientConfig
 
 from .handlers import HANDLER_REGISTRY, BaseHandler
-from .serializers import FileContentSerializer
+from .renders import BinaryFileRenderer
+from .serializers import FileSerializer
 
 
 class ConfigMixin:
@@ -22,11 +23,12 @@ class ConfigMixin:
 
 
 class FileDetailView(ConfigMixin, APIView):
-    serializer_class = FileContentSerializer
+    renderer_classes = [BinaryFileRenderer]
 
     @extend_schema(
         operation_id="file_download",
         summary=_("File download"),
+        responses={(200, "application/octet-stream"): OpenApiTypes.BINARY},
         parameters=[
             OpenApiParameter(
                 name="slug",
@@ -57,9 +59,8 @@ class FileDetailView(ConfigMixin, APIView):
     )
     def get(self, request, **kwargs):
         """Download configuration file"""
-        file = self.download_file()
-        serializer = self.serializer_class(file)
-        return Response(serializer.data)
+        content = self.download_file()
+        return Response(content)
 
     def download_file(self):
         handler = self.get_handler()
@@ -70,7 +71,7 @@ class FileDetailView(ConfigMixin, APIView):
 
 
 class FileListView(ConfigMixin, APIView):
-    serializer_class = FileContentSerializer
+    serializer_class = FileSerializer
 
     @extend_schema(
         operation_id="file_upload",
@@ -101,11 +102,10 @@ class FileListView(ConfigMixin, APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        file = self.upload_file(
+        self.upload_file(
             filename=serializer.data["filename"], content=serializer.data["content"]
         )
 
-        serializer.instance = file
         return Response(serializer.data)
 
     def upload_file(self, filename, content):

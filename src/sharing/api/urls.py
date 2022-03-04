@@ -24,7 +24,7 @@ urlpatterns = [
                 path(
                     "config/<str:slug>/folder/<str:folder>/files/<str:filename>/",
                     FileDetailView.as_view(),
-                    name="file-detail",
+                    name="file-download",
                 ),
                 path(
                     "config/<str:slug>/folder/<str:folder>/files/",
