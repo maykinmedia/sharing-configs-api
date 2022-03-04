@@ -70,32 +70,34 @@ class FileDetailView(ConfigMixin, APIView):
         return handler.download(folder, filename)
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name="slug",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            required=True,
+            description=_(
+                "Slug label of the client configuration. Used to define the type of backend"
+            ),
+        ),
+        OpenApiParameter(
+            name="folder",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            required=True,
+            description=_(
+                "Path to the folder where the configuration file is located"
+            ),
+        ),
+    ],
+)
 class FileListView(ConfigMixin, APIView):
     serializer_class = FileSerializer
 
     @extend_schema(
         operation_id="file_upload",
         summary=_("File upload"),
-        parameters=[
-            OpenApiParameter(
-                name="slug",
-                type=OpenApiTypes.STR,
-                location=OpenApiParameter.PATH,
-                required=True,
-                description=_(
-                    "Slug label of the client configuration. Used to define the type of backend"
-                ),
-            ),
-            OpenApiParameter(
-                name="folder",
-                type=OpenApiTypes.STR,
-                location=OpenApiParameter.PATH,
-                required=True,
-                description=_(
-                    "Path to the folder where the configuration file is located"
-                ),
-            ),
-        ],
     )
     def post(self, request, **kwargs):
         """Upload configuration file"""
@@ -108,8 +110,34 @@ class FileListView(ConfigMixin, APIView):
 
         return Response(serializer.data)
 
+    @extend_schema(
+        operation_id="file_list",
+        summary=_("List files"),
+    )
+    def get(self, request, **kwargs):
+        """List all files in the folder"""
+        filenames = self.get_files_in_folder()
+        files = [{"filename": filename} for filename in filenames]
+        serializer = self.get_serializer(instance=files)
+        return Response(serializer.data)
+
+    def get_serializer(self, **kwargs):
+        if self.request.method == 'GET':
+            kwargs["many"] = True
+
+        return self.serializer_class(
+            context={"request": self.request, "view": self},
+            **kwargs,
+        )
+
     def upload_file(self, filename, content):
         handler = self.get_handler()
         folder = self.kwargs["folder"]
 
         return handler.upload(folder=folder, filename=filename, content=content)
+
+    def get_files_in_folder(self):
+        handler = self.get_handler()
+        folder = self.kwargs["folder"]
+
+        return handler.list_files(folder=folder)

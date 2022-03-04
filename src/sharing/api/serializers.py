@@ -23,20 +23,16 @@ class FileSerializer(serializers.Serializer):
 
     @extend_schema_field(OpenApiTypes.URI)
     def get_url(self, data) -> str:
-        assert "request" in self.context, (
-            "`%s` requires the request in the serializer"
-            " context. Add `context={'request': request}` when instantiating "
-            "the serializer." % self.__class__.__name__
-        )
         request = self.context["request"]
+        view = self.context["view"]
 
         url = reverse(
             "file-download",
             kwargs={
-                "slug": request.kwargs["slug"],
-                "folder": request.kwargs["folder"],
+                "slug": view.kwargs["slug"],
+                "folder": view.kwargs["folder"],
                 "filename": data["filename"],
             },
             request=request,
         )
-        return "url"
+        return url

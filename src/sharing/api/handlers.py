@@ -1,3 +1,4 @@
+from typing import List
 import logging
 from dataclasses import dataclass
 
@@ -29,6 +30,9 @@ class BaseHandler:
         """
         raise ImproperlyConfigured("'upload_content' method should be defined")
 
+    def list_files(self, folder: str) -> List[str]:
+        raise ImproperlyConfigured("'list_files' method should be defined")
+
 
 class DebugHandler(BaseHandler):
     """handler used for testing, It downloads the example file and uploads file into stdout"""
@@ -38,6 +42,9 @@ class DebugHandler(BaseHandler):
 
     def upload(self, folder: str, filename: str, content: bytes):
         logger.info(f"file {filename} is uploaded with DebugHandler to stdout")
+
+    def list_files(self, folder: str):
+        return ["example_file.txt"]
 
 
 HANDLER_REGISTRY = {ConfigTypes.debug: DebugHandler}

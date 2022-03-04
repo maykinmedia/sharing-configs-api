@@ -5,6 +5,36 @@ info:
   description: An API to share configuration files using different backends
 paths:
   /api/v1/config/{slug}/folder/{folder}/files/:
+    get:
+      operationId: file_list
+      description: List all files in the folder
+      summary: List files
+      parameters:
+      - in: path
+        name: folder
+        schema:
+          type: string
+        description: Path to the folder where the configuration file is located
+        required: true
+      - in: path
+        name: slug
+        schema:
+          type: string
+        description: Slug label of the client configuration. Used to define the type
+          of backend
+        required: true
+      tags:
+      - config
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+          description: ''
     post:
       operationId: file_upload
       description: Upload configuration file
@@ -41,7 +71,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/File'
           description: ''
-  /api/v1/config/{slug}/folder/{folder}/files/{filename}/:
+  /api/v1/config/{slug}/folder/{folder}/files/{filename}:
     get:
       operationId: file_download
       description: Download configuration file
