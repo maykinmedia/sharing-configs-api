@@ -1,0 +1,18 @@
+{% extends "master.html" %}
+
+{% block content %}
+    <header>
+        <h1>{{ settings.PROJECT_NAME }} API</h1>
+    </header>
+
+    <main>
+        <p>The Sharing Configs API aims to assist with sharing configuration files using different backends.</p>
+
+        <div>
+          <a href="{% url 'schema-redoc' %}">Open API specification</a>
+          <a href="/admin">Admin</a>
+        </div>
+    </main>
+
+
+{% endblock %}

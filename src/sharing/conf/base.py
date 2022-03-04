@@ -339,7 +339,7 @@ FIXTURE_DIRS = (os.path.join(DJANGO_PROJECT_DIR, "fixtures"),)
 #
 # Custom settings
 #
-PROJECT_NAME = "sharing"
+PROJECT_NAME = "Sharing Configs API"
 ENVIRONMENT = config("ENVIRONMENT", "")
 SHOW_ALERT = True
 ENABLE_ADMIN_NAV_SIDEBAR = config("ENABLE_ADMIN_NAV_SIDEBAR", default=False)

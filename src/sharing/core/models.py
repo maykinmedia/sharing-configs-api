@@ -1,6 +1,7 @@
 import binascii
 import os
 
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -89,3 +90,8 @@ class ClientConfig(models.Model):
 
     def __str__(self):
         return f"{self.client_auth} ({self.label})"
+
+    def get_message(self) -> str:
+        """comment for exported files"""
+
+        return f"Automatically created by {self.client_auth.organization} using {settings.PROJECT_NAME}"
