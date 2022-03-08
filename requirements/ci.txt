@@ -25,6 +25,11 @@ certifi==2021.10.8
     #   elastic-apm
     #   requests
     #   sentry-sdk
+cffi==1.15.0
+    # via
+    #   -c requirements/base.txt
+    #   -r requirements/base.txt
+    #   pynacl
 charset-normalizer==2.0.12
     # via
     #   -c requirements/base.txt
@@ -38,6 +43,7 @@ deprecated==1.2.13
     # via
     #   -c requirements/base.txt
     #   -r requirements/base.txt
+    #   pygithub
     #   redis
 django==3.2.12
     # via
@@ -196,8 +202,27 @@ psycopg2==2.9.3
     # via
     #   -c requirements/base.txt
     #   -r requirements/base.txt
+pycparser==2.21
+    # via
+    #   -c requirements/base.txt
+    #   -r requirements/base.txt
+    #   cffi
+pygithub==1.55
+    # via
+    #   -c requirements/base.txt
+    #   -r requirements/base.txt
+pyjwt==2.3.0
+    # via
+    #   -c requirements/base.txt
+    #   -r requirements/base.txt
+    #   pygithub
 pylint==2.12.2
     # via -r requirements/test-tools.in
+pynacl==1.5.0
+    # via
+    #   -c requirements/base.txt
+    #   -r requirements/base.txt
+    #   pygithub
 pyparsing==3.0.7
     # via
     #   -c requirements/base.txt
@@ -248,6 +273,7 @@ requests==2.27.1
     #   -c requirements/base.txt
     #   -r requirements/base.txt
     #   django-rosetta
+    #   pygithub
     #   requests-mock
 requests-mock==1.9.3
     # via -r requirements/test-tools.in
