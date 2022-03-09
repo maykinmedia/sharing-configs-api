@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from .constants import ConfigTypes
@@ -28,6 +29,9 @@ class ClientAuth(models.Model):
         auto_now=True,
         help_text=_("Date when the token was last changed"),
     )
+    configs = models.ManyToManyField(
+        "core.Config", related_name="client_auths", blank=True
+    )
 
     class Meta:
         verbose_name = _("Client authorization")
@@ -44,16 +48,21 @@ class ClientAuth(models.Model):
     def generate_token(self):
         return binascii.hexlify(os.urandom(20)).decode()
 
+    def get_comment(self, author=None) -> str:
+        """comment for exported files"""
 
-class ClientConfig(models.Model):
-    client_auth = models.ForeignKey(
-        ClientAuth, related_name="configs", on_delete=models.CASCADE
-    )
+        if author:
+            return f"Automatically created by {author} for {self.organization} using {settings.PROJECT_NAME}"
+
+        return f"Automatically created by {self.organization} using {settings.PROJECT_NAME}"
+
+
+class Config(models.Model):
     label = models.CharField(
-        _("label"), max_length=100, help_text=_("label to name the config")
-    )
-    slug = models.SlugField(
-        _("slug"), max_length=100, help_text=_("Slug of the config. Used in the API")
+        _("label"),
+        max_length=100,
+        unique=True,
+        help_text=_("Name of the config to define which file storage backend to use"),
     )
     type = models.CharField(
         _("type"),
@@ -84,14 +93,13 @@ class ClientConfig(models.Model):
     )
 
     class Meta:
-        verbose_name = _("Client configuration")
-        verbose_name_plural = _("Client configurations")
-        unique_together = ("client_auth", "slug")
+        verbose_name = _("Configuration")
+        verbose_name_plural = _("Configurations")
 
     def __str__(self):
-        return f"{self.client_auth} ({self.label})"
+        return f"{self.label}"
 
-    def get_message(self) -> str:
-        """comment for exported files"""
+    def save(self, **kwargs):
+        self.label = slugify(self.label)
 
-        return f"Automatically created by {self.client_auth.organization} using {settings.PROJECT_NAME}"
+        super().save(**kwargs)

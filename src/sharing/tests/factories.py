@@ -1,5 +1,3 @@
-from django.utils.text import slugify
-
 import factory
 
 from sharing.core.constants import ConfigTypes
@@ -13,11 +11,17 @@ class ClientAuthFactory(factory.django.DjangoModelFactory):
         model = "core.ClientAuth"
 
 
-class ClientConfigFactory(factory.django.DjangoModelFactory):
-    client_auth = factory.SubFactory(ClientAuthFactory)
-    label = factory.Faker("name")
-    slug = factory.LazyAttribute(lambda a: slugify(a.label))
+class ConfigFactory(factory.django.DjangoModelFactory):
+    label = factory.Faker("word")
     type = ConfigTypes.debug
 
     class Meta:
-        model = "core.ClientConfig"
+        model = "core.Config"
+
+    @factory.post_generation
+    def client_auth(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.client_auths.add(extracted)

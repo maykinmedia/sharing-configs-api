@@ -8,9 +8,11 @@ from .fields import AnyBase64FileField
 
 
 class FileSerializer(serializers.Serializer):
-    url = serializers.SerializerMethodField(
-        label=_("url"),
-        help_text=_("Url of the file in the Sharing Configs API"),
+    download_url = serializers.SerializerMethodField(
+        label=_("download url"),
+        help_text=_(
+            "Url to download the content of the file in the Sharing Configs API"
+        ),
     )
     filename = fields.CharField(
         label=_("filename"), max_length=100, help_text=_("Name of the file")
@@ -20,16 +22,22 @@ class FileSerializer(serializers.Serializer):
         write_only=True,
         help_text=_("File content with base64 encoding"),
     )
+    author = serializers.CharField(
+        label=_("author"),
+        write_only=True,
+        required=False,
+        help_text=_("Person who uploads the file"),
+    )
 
     @extend_schema_field(OpenApiTypes.URI)
-    def get_url(self, data) -> str:
+    def get_download_url(self, data) -> str:
         request = self.context["request"]
         view = self.context["view"]
 
         url = reverse(
             "file-download",
             kwargs={
-                "slug": view.kwargs["slug"],
+                "label": view.kwargs["label"],
                 "folder": view.kwargs["folder"],
                 "filename": data["filename"],
             },

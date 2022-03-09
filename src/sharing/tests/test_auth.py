@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .factories import ClientConfigFactory
+from .factories import ClientAuthFactory, ConfigFactory
 
 
 class TokenAuthTests(APITestCase):
@@ -12,12 +12,14 @@ class TokenAuthTests(APITestCase):
             reverse(
                 "file-download",
                 kwargs={
-                    "slug": "some-slug",
+                    "label": "some-label",
                     "folder": "some/folder",
                     "filename": "somefile.txt",
                 },
             ),
-            reverse("file-list", kwargs={"slug": "some-slug", "folder": "some/folder"}),
+            reverse(
+                "file-list", kwargs={"label": "some-label", "folder": "some/folder"}
+            ),
         ]
 
     def test_non_auth(self):
@@ -27,17 +29,19 @@ class TokenAuthTests(APITestCase):
                 self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_invalid_token(self):
-        ClientConfigFactory.create()
+        ClientAuthFactory.create()
+        ConfigFactory.create()
         for url in self.urls:
             with self.subTest(url=url):
                 response = self.client.get(url, HTTP_AUTHORIZATION="Token 12345")
                 self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_invalid_slug(self):
-        config = ClientConfigFactory.create()
+        client_auth = ClientAuthFactory.create()
+        config = ConfigFactory.create()
         for url in self.urls:
             with self.subTest(url=url):
                 response = self.client.get(
-                    url, HTTP_AUTHORIZATION=f"Token {config.client_auth.token}"
+                    url, HTTP_AUTHORIZATION=f"Token {client_auth.token}"
                 )
                 self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

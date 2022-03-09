@@ -5,7 +5,7 @@ from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from sharing.core.models import ClientConfig
+from sharing.core.models import Config
 
 from .handlers import HANDLER_REGISTRY, BaseHandler
 from .renders import BinaryFileRenderer
@@ -13,9 +13,9 @@ from .serializers import FileSerializer
 
 
 class ConfigMixin:
-    def get_config(self) -> ClientConfig:
-        slug = self.kwargs["slug"]
-        return get_object_or_404(ClientConfig, client_auth=self.request.auth, slug=slug)
+    def get_config(self) -> Config:
+        label = self.kwargs["label"]
+        return get_object_or_404(Config, label=label, client_auths=self.request.auth)
 
     def get_handler(self) -> BaseHandler:
         config = self.get_config()
@@ -31,12 +31,12 @@ class FileDetailView(ConfigMixin, APIView):
         responses={(200, "application/octet-stream"): OpenApiTypes.BINARY},
         parameters=[
             OpenApiParameter(
-                name="slug",
+                name="label",
                 type=OpenApiTypes.STR,
                 location=OpenApiParameter.PATH,
                 required=True,
                 description=_(
-                    "Slug label of the client configuration. Used to define the type of backend"
+                    "Name of the configuration. Used to define the parameters for file storage backend"
                 ),
             ),
             OpenApiParameter(
@@ -73,12 +73,12 @@ class FileDetailView(ConfigMixin, APIView):
 @extend_schema(
     parameters=[
         OpenApiParameter(
-            name="slug",
+            name="label",
             type=OpenApiTypes.STR,
             location=OpenApiParameter.PATH,
             required=True,
             description=_(
-                "Slug label of the client configuration. Used to define the type of backend"
+                "Name of the configuration Used to define the parameters for file storage backend"
             ),
         ),
         OpenApiParameter(
@@ -105,6 +105,7 @@ class FileListView(ConfigMixin, APIView):
         self.upload_file(
             filename=serializer.validated_data["filename"],
             content=serializer.validated_data["content"].read(),
+            author=serializer.validated_data.get("author"),
         )
 
         return Response(serializer.data)
@@ -129,11 +130,17 @@ class FileListView(ConfigMixin, APIView):
             **kwargs,
         )
 
-    def upload_file(self, filename, content):
+    def upload_file(self, filename, content, author=None):
         handler = self.get_handler()
         folder = self.kwargs["folder"]
+        comment = self.request.auth.get_comment(author)
 
-        return handler.upload(folder=folder, filename=filename, content=content)
+        return handler.upload(
+            folder=folder,
+            filename=filename,
+            content=content,
+            comment=comment,
+        )
 
     def get_files_in_folder(self):
         handler = self.get_handler()

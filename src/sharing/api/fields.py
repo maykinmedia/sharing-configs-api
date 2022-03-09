@@ -1,4 +1,5 @@
 from drf_extra_fields.fields import Base64FileField
+from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 
 
 class AnyFileType:
@@ -6,6 +7,7 @@ class AnyFileType:
         return True
 
 
+@extend_schema_field(OpenApiTypes.STR)
 class AnyBase64FileField(Base64FileField):
     ALLOWED_TYPES = AnyFileType()
 

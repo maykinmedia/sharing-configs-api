@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .factories import ClientConfigFactory
+from .factories import ConfigFactory
 from .utils import TokenAuthMixin
 
 
@@ -13,13 +13,13 @@ class DownloadFileTests(TokenAuthMixin, APITestCase):
     def setUp(self):
         super().setUp()
 
-        self.config = ClientConfigFactory.create(client_auth=self.client_auth)
+        self.config = ConfigFactory.create(client_auth=self.client_auth)
 
     def test_download_file_debug(self):
         url = reverse(
             "file-download",
             kwargs={
-                "slug": self.config.slug,
+                "label": self.config.label,
                 "folder": "some/folder",
                 "filename": "somefile.txt",
             },
@@ -36,15 +36,16 @@ class UploadFileTests(TokenAuthMixin, APITestCase):
     def setUp(self):
         super().setUp()
 
-        self.config = ClientConfigFactory.create(client_auth=self.client_auth)
+        self.config = ConfigFactory.create(client_auth=self.client_auth)
 
     def test_upload_file_debug(self):
         url = reverse(
-            "file-list", kwargs={"slug": self.config.slug, "folder": "some/folder"}
+            "file-list", kwargs={"label": self.config.label, "folder": "some/folder"}
         )
         data = {
             "filename": "somefile.txt",
             "content": base64.b64encode(b"example content").decode("utf-8"),
+            "author": "some author",
         }
 
         response = self.client.post(url, data)
@@ -53,7 +54,7 @@ class UploadFileTests(TokenAuthMixin, APITestCase):
         download_url = reverse(
             "file-download",
             kwargs={
-                "slug": self.config.slug,
+                "label": self.config.label,
                 "folder": "some/folder",
                 "filename": "somefile.txt",
             },
@@ -61,7 +62,7 @@ class UploadFileTests(TokenAuthMixin, APITestCase):
         self.assertEqual(
             response.json(),
             {
-                "url": f"http://testserver{download_url}",
+                "download_url": f"http://testserver{download_url}",
                 "filename": "somefile.txt",
             },
         )
@@ -71,11 +72,11 @@ class ListFilesTests(TokenAuthMixin, APITestCase):
     def setUp(self):
         super().setUp()
 
-        self.config = ClientConfigFactory.create(client_auth=self.client_auth)
+        self.config = ConfigFactory.create(client_auth=self.client_auth)
 
     def test_list_files_debug(self):
         url = reverse(
-            "file-list", kwargs={"slug": self.config.slug, "folder": "some/folder"}
+            "file-list", kwargs={"label": self.config.label, "folder": "some/folder"}
         )
 
         response = self.client.get(url)
@@ -84,7 +85,7 @@ class ListFilesTests(TokenAuthMixin, APITestCase):
         download_url = reverse(
             "file-download",
             kwargs={
-                "slug": self.config.slug,
+                "label": self.config.label,
                 "folder": "some/folder",
                 "filename": "example_file.txt",
             },
@@ -93,7 +94,7 @@ class ListFilesTests(TokenAuthMixin, APITestCase):
             response.json(),
             [
                 {
-                    "url": f"http://testserver{download_url}",
+                    "download_url": f"http://testserver{download_url}",
                     "filename": "example_file.txt",
                 }
             ],

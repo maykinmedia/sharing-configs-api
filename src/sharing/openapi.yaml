@@ -4,7 +4,7 @@ info:
   version: 0.1.0
   description: An API to share configuration files using different backends
 paths:
-  /api/v1/config/{slug}/folder/{folder}/files/:
+  /api/v1/config/{label}/folder/{folder}/files/:
     get:
       operationId: file_list
       description: List all files in the folder
@@ -17,11 +17,11 @@ paths:
         description: Path to the folder where the configuration file is located
         required: true
       - in: path
-        name: slug
+        name: label
         schema:
           type: string
-        description: Slug label of the client configuration. Used to define the type
-          of backend
+        description: Name of the configuration Used to define the parameters for file
+          storage backend
         required: true
       tags:
       - config
@@ -48,11 +48,11 @@ paths:
         description: Path to the folder where the configuration file is located
         required: true
       - in: path
-        name: slug
+        name: label
         schema:
           type: string
-        description: Slug label of the client configuration. Used to define the type
-          of backend
+        description: Name of the configuration Used to define the parameters for file
+          storage backend
         required: true
       tags:
       - config
@@ -71,7 +71,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/File'
           description: ''
-  /api/v1/config/{slug}/folder/{folder}/files/{filename}:
+  /api/v1/config/{label}/folder/{folder}/files/{filename}:
     get:
       operationId: file_download
       description: Download configuration file
@@ -90,11 +90,11 @@ paths:
         description: Path to the folder where the configuration file is located
         required: true
       - in: path
-        name: slug
+        name: label
         schema:
           type: string
-        description: Slug label of the client configuration. Used to define the type
-          of backend
+        description: Name of the configuration. Used to define the parameters for
+          file storage backend
         required: true
       tags:
       - config
@@ -113,20 +113,24 @@ components:
     File:
       type: object
       properties:
-        url:
+        download_url:
           type: string
           format: uri
           readOnly: true
-          description: Url of the file in the Sharing Configs API
+          description: Url to download the content of the file in the Sharing Configs
+            API
         filename:
           type: string
           description: Name of the file
           maxLength: 100
         content:
           type: string
-          format: uri
           writeOnly: true
           description: File content with base64 encoding
+        author:
+          type: string
+          writeOnly: true
+          description: Person who uploads the file
       required:
       - content
       - filename
