@@ -87,3 +87,24 @@ class IPThrottleMixin(ThrottleMixin):
     def get_throttle_identifier(self):
         # REMOTE_ADDR is correctly set in XForwardedForMiddleware
         return str(self.request.META["REMOTE_ADDR"])
+
+
+class PaginationMixin:
+    """
+    pagination methods from rest_framework.GenericAPIView decoupled from querysets
+    """
+
+    @property
+    def paginator(self):
+        """
+        The paginator instance associated with the view, or `None`.
+        """
+        if not hasattr(self, "_paginator"):
+            self._paginator = self.pagination_class()
+        return self._paginator
+
+    def paginate_objects(self, objects: list):
+        return self.paginator.paginate_queryset(objects, self.request, view=self)
+
+    def get_paginated_response(self, data):
+        return self.paginator.get_paginated_response(data)

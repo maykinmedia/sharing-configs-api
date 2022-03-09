@@ -2,10 +2,12 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
 from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from sharing.core.models import Config
+from sharing.utils.mixins import PaginationMixin
 
 from .handlers import HANDLER_REGISTRY, BaseHandler
 from .renders import BinaryFileRenderer
@@ -90,8 +92,9 @@ class FileDetailView(ConfigMixin, APIView):
         ),
     ],
 )
-class FileListView(ConfigMixin, APIView):
+class FileListView(ConfigMixin, PaginationMixin, APIView):
     serializer_class = FileSerializer
+    pagination_class = PageNumberPagination
 
     @extend_schema(
         operation_id="file_upload",
@@ -118,8 +121,10 @@ class FileListView(ConfigMixin, APIView):
         """List all files in the folder"""
         filenames = self.get_files_in_folder()
         files = [{"filename": filename} for filename in filenames]
-        serializer = self.get_serializer(instance=files)
-        return Response(serializer.data)
+
+        page = self.paginate_objects(files)
+        serializer = self.get_serializer(instance=page)
+        return self.get_paginated_response(serializer.data)
 
     def get_serializer(self, **kwargs):
         if self.request.method == "GET":

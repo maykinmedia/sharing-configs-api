@@ -23,6 +23,12 @@ paths:
         description: Name of the configuration Used to define the parameters for file
           storage backend
         required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
       tags:
       - config
       security:
@@ -32,9 +38,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/File'
+                $ref: '#/components/schemas/PaginatedFileList'
           description: ''
     post:
       operationId: file_upload
@@ -134,6 +138,26 @@ components:
       required:
       - content
       - filename
+    PaginatedFileList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
   securitySchemes:
     tokenAuth:
       type: apiKey

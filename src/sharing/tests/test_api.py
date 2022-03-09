@@ -92,10 +92,15 @@ class ListFilesTests(TokenAuthMixin, APITestCase):
         )
         self.assertEqual(
             response.json(),
-            [
-                {
-                    "download_url": f"http://testserver{download_url}",
-                    "filename": "example_file.txt",
-                }
-            ],
+            {
+                "count": 1,
+                "next": None,
+                "previous": None,
+                "results": [
+                    {
+                        "download_url": f"http://testserver{download_url}",
+                        "filename": "example_file.txt",
+                    }
+                ],
+            },
         )
