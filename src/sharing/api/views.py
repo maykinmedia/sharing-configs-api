@@ -1,7 +1,13 @@
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
-from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiTypes,
+    extend_schema,
+    extend_schema_view,
+)
+from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,7 +17,7 @@ from sharing.utils.mixins import PaginationMixin
 
 from .handlers import HANDLER_REGISTRY, BaseHandler
 from .renders import BinaryFileRenderer
-from .serializers import FileSerializer
+from .serializers import ConfigSerializer, FileSerializer
 
 
 class ConfigMixin:
@@ -58,6 +64,7 @@ class FileDetailView(ConfigMixin, APIView):
                 description=_("Name of the configuration file"),
             ),
         ],
+        tags=["files"],
     )
     def get(self, request, **kwargs):
         """Download configuration file"""
@@ -91,6 +98,7 @@ class FileDetailView(ConfigMixin, APIView):
             description=_("Path to the folder where the configuration file is located"),
         ),
     ],
+    tags=["files"],
 )
 class FileListView(ConfigMixin, PaginationMixin, APIView):
     serializer_class = FileSerializer
@@ -152,3 +160,19 @@ class FileListView(ConfigMixin, PaginationMixin, APIView):
         folder = self.kwargs["folder"]
 
         return handler.list_files(folder=folder)
+
+
+@extend_schema_view(
+    get=extend_schema(
+        operation_id="config_list",
+        summary=_("List configs"),
+        description=_("List all available configs"),
+    )
+)
+class ConfigListView(ListAPIView):
+    serializer_class = ConfigSerializer
+    queryset = Config.objects.order_by("label")
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(client_auths=self.request.auth).distinct()
