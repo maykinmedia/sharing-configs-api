@@ -2,6 +2,7 @@ import binascii
 import os
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -103,3 +104,17 @@ class Config(models.Model):
         self.label = slugify(self.label)
 
         super().save(**kwargs)
+
+    def clean(self):
+        super().clean()
+
+        if self.type == ConfigTypes.github:
+            if not self.access_token:
+                raise ValidationError(
+                    {"access_token": "This field is required for GitHub config"}
+                )
+
+            if not self.repo:
+                raise ValidationError(
+                    {"repo": "This field is required for GitHub config"}
+                )

@@ -6,10 +6,11 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from sharing.core.handlers import BaseHandler, registry
 from sharing.core.models import Config
 from sharing.utils.mixins import PaginationMixin
 
-from .handlers import HANDLER_REGISTRY, BaseHandler
+from .exceptions import handler_errors_for_api
 from .renders import BinaryFileRenderer
 from .serializers import FileSerializer
 
@@ -21,7 +22,7 @@ class ConfigMixin:
 
     def get_handler(self) -> BaseHandler:
         config = self.get_config()
-        return HANDLER_REGISTRY[config.type](config)
+        return registry[config.type](config)
 
 
 class FileDetailView(ConfigMixin, APIView):
@@ -64,6 +65,7 @@ class FileDetailView(ConfigMixin, APIView):
         content = self.download_file()
         return Response(content)
 
+    @handler_errors_for_api
     def download_file(self):
         handler = self.get_handler()
         folder = self.kwargs["folder"]
@@ -135,18 +137,20 @@ class FileListView(ConfigMixin, PaginationMixin, APIView):
             **kwargs,
         )
 
+    @handler_errors_for_api
     def upload_file(self, filename, content, author=None):
         handler = self.get_handler()
         folder = self.kwargs["folder"]
         comment = self.request.auth.get_comment(author)
 
-        return handler.upload(
+        handler.upload(
             folder=folder,
             filename=filename,
             content=content,
             comment=comment,
         )
 
+    @handler_errors_for_api
     def get_files_in_folder(self):
         handler = self.get_handler()
         folder = self.kwargs["folder"]
