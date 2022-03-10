@@ -4,14 +4,12 @@ from typing import List
 
 from github import ContentFile, Github, GithubObject
 
-from sharing.core.models import ClientConfig
+from sharing.core.models import Config
 
 logger = logging.getLogger(__name__)
 
 
-def get_file(
-    config: ClientConfig, folder: str, filename: str
-) -> ContentFile.ContentFile:
+def get_file(config: Config, folder: str, filename: str) -> ContentFile.ContentFile:
     """
     Return the content of the file
 
@@ -27,7 +25,7 @@ def get_file(
 
 
 def create_file(
-    config: ClientConfig, folder: str, filename: str, content: bytes
+    config: Config, folder: str, filename: str, content: bytes, comment: str = None
 ) -> ContentFile.ContentFile:
     """
     Create file in the repo
@@ -41,7 +39,7 @@ def create_file(
 
     path = os.path.join(folder, filename)
     created = repo.create_file(
-        path=path, content=content, message=config.get_message(), branch=branch
+        path=path, content=content, message=comment, branch=branch
     )
 
     logger.info(
@@ -51,9 +49,7 @@ def create_file(
     return created["content"]
 
 
-def get_files_in_folder(
-    config: ClientConfig, folder: str
-) -> List[ContentFile.ContentFile]:
+def get_files_in_folder(config: Config, folder: str) -> List[ContentFile.ContentFile]:
     """
     Return the content of the folder
 
