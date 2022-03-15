@@ -70,8 +70,6 @@ COPY ./bin/docker_start.sh /start.sh
 RUN mkdir /app/log
 RUN mkdir /app/media
 
-VOLUME ["/app/log", "/app/media"]
-
 # copy backend build deps
 COPY --from=backend-build /usr/local/lib/python3.9 /usr/local/lib/python3.9
 COPY --from=backend-build /usr/local/bin/uwsgi /usr/local/bin/uwsgi
@@ -102,7 +100,7 @@ ENV RELEASE=${RELEASE} \
 ARG SECRET_KEY=dummy
 
 LABEL org.label-schema.vcs-ref=$COMMIT_HASH \
-      org.label-schema.vcs-url="https://bitbucket.org/maykinmedia/sharing" \
+      org.label-schema.vcs-url="https://github.com/maykinmedia/sharing" \
       org.label-schema.version=$RELEASE \
       org.label-schema.name="sharing"
 
