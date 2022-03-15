@@ -1,12 +1,52 @@
 import base64
+from unittest.mock import patch
 
 from django.urls import reverse
 
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from sharing.core.constants import ConfigTypes
+from sharing.core.exceptions import HandlerException, HandlerObjectNotFound
+
 from .factories import ConfigFactory
 from .utils import TokenAuthMixin
+
+
+class NotFoundHandler:
+    """mock handler to test catching exceptions"""
+
+    def __init__(self, config):
+        self.config = config
+
+    def download(self, folder, filename):
+        raise HandlerObjectNotFound("not found")
+
+    def upload(self, folder, filename, content, comment):
+        raise HandlerObjectNotFound("not found")
+
+    def list_files(self, folder):
+        raise HandlerObjectNotFound("not found")
+
+
+class OtherErrorHandler:
+    """mock handler to test catching exceptions"""
+
+    def __init__(self, config):
+        self.config = config
+
+    def download(self, folder, filename):
+        raise HandlerException("other error")
+
+    def upload(self, folder, filename, content, comment):
+        raise HandlerException("other error")
+
+    def list_files(self, folder):
+        raise HandlerException("other error")
+
+
+not_found_registry = {ConfigTypes.debug: NotFoundHandler}
+other_error_registry = {ConfigTypes.debug: OtherErrorHandler}
 
 
 class DownloadFileTests(TokenAuthMixin, APITestCase):
@@ -14,9 +54,7 @@ class DownloadFileTests(TokenAuthMixin, APITestCase):
         super().setUp()
 
         self.config = ConfigFactory.create(client_auth=self.client_auth)
-
-    def test_download_file_debug(self):
-        url = reverse(
+        self.url = reverse(
             "file-download",
             kwargs={
                 "label": self.config.label,
@@ -25,11 +63,25 @@ class DownloadFileTests(TokenAuthMixin, APITestCase):
             },
         )
 
-        response = self.client.get(url)
+    def test_download_file(self):
+        response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "application/octet-stream")
         self.assertEqual(response.content, b"example file")
+
+    @patch.dict("sharing.api.views.registry", not_found_registry)
+    def test_download_file_not_found(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @patch.dict("sharing.api.views.registry", other_error_registry)
+    def test_download_file_error(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.content, b"other error")
 
 
 class UploadFileTests(TokenAuthMixin, APITestCase):
@@ -37,18 +89,18 @@ class UploadFileTests(TokenAuthMixin, APITestCase):
         super().setUp()
 
         self.config = ConfigFactory.create(client_auth=self.client_auth)
-
-    def test_upload_file_debug(self):
-        url = reverse(
+        self.url = reverse(
             "file-list", kwargs={"label": self.config.label, "folder": "some/folder"}
         )
+
+    def test_upload_file(self):
         data = {
             "filename": "somefile.txt",
             "content": base64.b64encode(b"example content").decode("utf-8"),
             "author": "some author",
         }
 
-        response = self.client.post(url, data)
+        response = self.client.post(self.url, data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         download_url = reverse(
@@ -67,19 +119,44 @@ class UploadFileTests(TokenAuthMixin, APITestCase):
             },
         )
 
+    @patch.dict("sharing.api.views.registry", not_found_registry)
+    def test_upload_file_not_found(self):
+        data = {
+            "filename": "somefile.txt",
+            "content": base64.b64encode(b"example content").decode("utf-8"),
+            "author": "some author",
+        }
+
+        response = self.client.post(self.url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @patch.dict("sharing.api.views.registry", other_error_registry)
+    def test_upload_file_error(self):
+        data = {
+            "filename": "somefile.txt",
+            "content": base64.b64encode(b"example content").decode("utf-8"),
+            "author": "some author",
+        }
+
+        response = self.client.post(self.url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), ["other error"])
+
 
 class ListFilesTests(TokenAuthMixin, APITestCase):
     def setUp(self):
         super().setUp()
 
         self.config = ConfigFactory.create(client_auth=self.client_auth)
-
-    def test_list_files_debug(self):
-        url = reverse(
+        self.url = reverse(
             "file-list", kwargs={"label": self.config.label, "folder": "some/folder"}
         )
 
-        response = self.client.get(url)
+    def test_list_files(self):
+        response = self.client.get(self.url)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         download_url = reverse(
@@ -104,3 +181,15 @@ class ListFilesTests(TokenAuthMixin, APITestCase):
                 ],
             },
         )
+
+    @patch.dict("sharing.api.views.registry", not_found_registry)
+    def test_list_files_not_found(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @patch.dict("sharing.api.views.registry", other_error_registry)
+    def test_list_files_error(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
