@@ -8,7 +8,7 @@ from .factories import ClientAuthFactory, ConfigFactory
 
 class TokenAuthTests(APITestCase):
     def setUp(self) -> None:
-        self.urls = [
+        self.file_urls = [
             reverse(
                 "file-download",
                 kwargs={
@@ -21,6 +21,8 @@ class TokenAuthTests(APITestCase):
                 "file-list", kwargs={"label": "some-label", "folder": "some/folder"}
             ),
         ]
+        self.config_url = reverse("config-list")
+        self.urls = self.file_urls + [self.config_url]
 
     def test_non_auth(self):
         for url in self.urls:
@@ -39,7 +41,7 @@ class TokenAuthTests(APITestCase):
     def test_invalid_slug(self):
         client_auth = ClientAuthFactory.create()
         config = ConfigFactory.create()
-        for url in self.urls:
+        for url in self.file_urls:
             with self.subTest(url=url):
                 response = self.client.get(
                     url, HTTP_AUTHORIZATION=f"Token {client_auth.token}"

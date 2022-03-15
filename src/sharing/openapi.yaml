@@ -30,7 +30,7 @@ paths:
         schema:
           type: integer
       tags:
-      - config
+      - files
       security:
       - tokenAuth: []
       responses:
@@ -59,7 +59,7 @@ paths:
           storage backend
         required: true
       tags:
-      - config
+      - files
       requestBody:
         content:
           application/json:
@@ -101,7 +101,7 @@ paths:
           file storage backend
         required: true
       tags:
-      - config
+      - files
       security:
       - tokenAuth: []
       responses:
@@ -112,8 +112,45 @@ paths:
                 type: string
                 format: binary
           description: ''
+  /api/v1/configs/:
+    get:
+      operationId: config_list
+      description: List all available configs
+      summary: List configs
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - configs
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConfigList'
+          description: ''
 components:
   schemas:
+    Config:
+      type: object
+      properties:
+        label:
+          type: string
+          description: Name of the config to define which file storage backend to
+            use
+          maxLength: 100
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          description: Type of the config
+      required:
+      - label
     File:
       type: object
       properties:
@@ -138,6 +175,26 @@ components:
       required:
       - content
       - filename
+    PaginatedConfigList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Config'
     PaginatedFileList:
       type: object
       properties:
@@ -158,6 +215,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/File'
+    TypeEnum:
+      enum:
+      - github
+      - debug
+      type: string
   securitySchemes:
     tokenAuth:
       type: apiKey

@@ -4,6 +4,8 @@ from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 from rest_framework import fields, serializers
 from rest_framework.reverse import reverse
 
+from sharing.core.models import Config
+
 from .fields import AnyBase64FileField
 
 
@@ -44,3 +46,9 @@ class FileSerializer(serializers.Serializer):
             request=request,
         )
         return url
+
+
+class ConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Config
+        fields = ("label", "type")
