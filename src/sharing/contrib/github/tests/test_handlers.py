@@ -87,10 +87,16 @@ class GitHubHandlerTests(TestCase):
         with self.assertRaises(HandlerException):
             self.handler.list_files(self.folder)
 
-    def test_list_upload_file(self, m):
+    def test_upload_file(self, m):
         m.get(
             f"{GITHUB_BASE_URL}repos/{self.config.repo}",
             json=mock_github_repo(name=self.config.repo),
+        )
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}",
+            json=[
+                mock_github_file(self.folder, "otherfile.txt", repo=self.config.repo)
+            ],
         )
         m.put(
             f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}/{self.filename}",
@@ -105,7 +111,7 @@ class GitHubHandlerTests(TestCase):
             comment="some comment",
         )
 
-    def test_list_upload_file_not_found(self, m):
+    def test_upload_file_not_found(self, m):
         m.get(
             f"{GITHUB_BASE_URL}repos/{self.config.repo}",
             status_code=404,
@@ -119,11 +125,56 @@ class GitHubHandlerTests(TestCase):
                 comment="some comment",
             )
 
-    def test_list_upload_file_error(self, m):
+    def test_upload_file_error(self, m):
         m.get(
             f"{GITHUB_BASE_URL}repos/{self.config.repo}",
             status_code=400,
             json={"message": "Client Error"},
+        )
+        with self.assertRaises(HandlerException):
+            self.handler.upload(
+                self.folder,
+                self.filename,
+                content=b"example content",
+                comment="some comment",
+            )
+
+    def test_upload_file_overwrite_existed(self, m):
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            json=mock_github_repo(name=self.config.repo),
+        )
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}",
+            json=[mock_github_file(self.folder, "somefile.txt", repo=self.config.repo)],
+        )
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}/{self.filename}",
+            json=mock_github_file(self.folder, "somefile.txt", repo=self.config.repo),
+        )
+        m.put(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}/{self.filename}",
+            json=mock_github_update_file(
+                self.folder, self.filename, repo=self.config.repo
+            ),
+        )
+
+        self.handler.upload(
+            self.folder,
+            self.filename,
+            content=b"example content",
+            comment="some comment",
+            overwrite=True,
+        )
+
+    def test_upload_file_not_overwrite_existed(self, m):
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            json=mock_github_repo(name=self.config.repo),
+        )
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}",
+            json=[mock_github_file(self.folder, "somefile.txt", repo=self.config.repo)],
         )
         with self.assertRaises(HandlerException):
             self.handler.upload(
