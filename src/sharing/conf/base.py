@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 
 import sentry_sdk
 
+from .api import *  # noqa
 from .utils import config, get_sentry_integrations
 
 # Build paths inside the project, so further paths can be defined relative to
@@ -115,8 +116,12 @@ INSTALLED_APPS = [
     "sniplates",
     "hijack",
     "hijack.contrib.admin",
+    "rest_framework",
+    "drf_spectacular",
     # Project applications.
     "sharing.accounts",
+    "sharing.api",
+    "sharing.core",
     "sharing.utils",
 ]
 
@@ -334,7 +339,7 @@ FIXTURE_DIRS = (os.path.join(DJANGO_PROJECT_DIR, "fixtures"),)
 #
 # Custom settings
 #
-PROJECT_NAME = "sharing"
+PROJECT_NAME = "Sharing Configs API"
 ENVIRONMENT = config("ENVIRONMENT", "")
 SHOW_ALERT = True
 ENABLE_ADMIN_NAV_SIDEBAR = config("ENABLE_ADMIN_NAV_SIDEBAR", default=False)

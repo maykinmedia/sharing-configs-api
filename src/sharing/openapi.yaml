@@ -1,0 +1,166 @@
+openapi: 3.0.3
+info:
+  title: Sharing Configurations API
+  version: 0.1.0
+  description: An API to share configuration files using different backends
+paths:
+  /api/v1/config/{label}/folder/{folder}/files/:
+    get:
+      operationId: file_list
+      description: List all files in the folder
+      summary: List files
+      parameters:
+      - in: path
+        name: folder
+        schema:
+          type: string
+        description: Path to the folder where the configuration file is located
+        required: true
+      - in: path
+        name: label
+        schema:
+          type: string
+        description: Name of the configuration Used to define the parameters for file
+          storage backend
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - config
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFileList'
+          description: ''
+    post:
+      operationId: file_upload
+      description: Upload configuration file
+      summary: File upload
+      parameters:
+      - in: path
+        name: folder
+        schema:
+          type: string
+        description: Path to the folder where the configuration file is located
+        required: true
+      - in: path
+        name: label
+        schema:
+          type: string
+        description: Name of the configuration Used to define the parameters for file
+          storage backend
+        required: true
+      tags:
+      - config
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/File'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+          description: ''
+  /api/v1/config/{label}/folder/{folder}/files/{filename}:
+    get:
+      operationId: file_download
+      description: Download configuration file
+      summary: File download
+      parameters:
+      - in: path
+        name: filename
+        schema:
+          type: string
+        description: Name of the configuration file
+        required: true
+      - in: path
+        name: folder
+        schema:
+          type: string
+        description: Path to the folder where the configuration file is located
+        required: true
+      - in: path
+        name: label
+        schema:
+          type: string
+        description: Name of the configuration. Used to define the parameters for
+          file storage backend
+        required: true
+      tags:
+      - config
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: ''
+components:
+  schemas:
+    File:
+      type: object
+      properties:
+        download_url:
+          type: string
+          format: uri
+          readOnly: true
+          description: Url to download the content of the file in the Sharing Configs
+            API
+        filename:
+          type: string
+          description: Name of the file
+          maxLength: 100
+        content:
+          type: string
+          writeOnly: true
+          description: File content with base64 encoding
+        author:
+          type: string
+          writeOnly: true
+          description: Person who uploads the file
+      required:
+      - content
+      - filename
+    PaginatedFileList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"

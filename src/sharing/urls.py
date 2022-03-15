@@ -10,9 +10,9 @@ from django.views.generic.base import TemplateView
 from sharing.accounts.views.password_reset import PasswordResetView
 
 handler500 = "sharing.utils.views.server_error"
-admin.site.site_header = "sharing admin"
+admin.site.site_header = "Sharing Configs API Admin"
 admin.site.site_title = "sharing admin"
-admin.site.index_title = "Welcome to the sharing admin"
+admin.site.index_title = "Welcome to the admin of Sharing Configurations API"
 
 urlpatterns = [
     path(
@@ -38,7 +38,8 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     # Simply show the master template.
-    path("", TemplateView.as_view(template_name="master.html"), name="root"),
+    path("", TemplateView.as_view(template_name="index.html"), name="root"),
+    path("api/", include("sharing.api.urls")),
 ]
 
 # NOTE: The staticfiles_urlpatterns also discovers static files (ie. no need to run collectstatic). Both the static
