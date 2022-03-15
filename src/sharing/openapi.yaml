@@ -172,6 +172,12 @@ components:
           type: string
           writeOnly: true
           description: Person who uploads the file
+        overwrite:
+          type: boolean
+          writeOnly: true
+          default: false
+          description: Boolean if the uploaded file should overwrite the existing
+            file in the folder
       required:
       - content
       - filename

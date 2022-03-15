@@ -30,6 +30,14 @@ class FileSerializer(serializers.Serializer):
         required=False,
         help_text=_("Person who uploads the file"),
     )
+    overwrite = serializers.BooleanField(
+        label=_("overwrite"),
+        write_only=True,
+        default=False,
+        help_text=_(
+            "Boolean if the uploaded file should overwrite the existing file in the folder"
+        ),
+    )
 
     @extend_schema_field(OpenApiTypes.URI)
     def get_download_url(self, data) -> str:

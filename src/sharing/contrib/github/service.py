@@ -66,3 +66,29 @@ def get_files_in_folder(config: Config, folder: str) -> List[ContentFile.Content
     ]
 
     return files
+
+
+def update_file(
+    config: Config, folder: str, filename: str, content: bytes, comment: str = None
+) -> ContentFile.ContentFile:
+    """
+    Updated existing file in the repo
+
+    :calls: `PUT /repos/{owner}/{repo}/contents/{path}
+    """
+
+    g = Github(config.access_token)
+    repo = g.get_repo(config.repo)
+    branch = config.branch or GithubObject.NotSet
+
+    path = os.path.join(folder, filename)
+    old_content = repo.get_contents(path)
+    updated = repo.update_file(
+        path=path, content=content, message=comment, branch=branch, sha=old_content.sha
+    )
+
+    logger.info(
+        f"File {path} was updated in the {repo}, commit={updated['commit'].sha}"
+    )
+
+    return updated["content"]

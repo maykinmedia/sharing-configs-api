@@ -119,6 +119,7 @@ class FileListView(ConfigMixin, PaginationMixin, APIView):
             filename=serializer.validated_data["filename"],
             content=serializer.validated_data["content"].read(),
             author=serializer.validated_data.get("author"),
+            overwrite=serializer.validated_data.get("overwrite", False),
         )
 
         return Response(serializer.data)
@@ -146,7 +147,7 @@ class FileListView(ConfigMixin, PaginationMixin, APIView):
         )
 
     @handler_errors_for_api
-    def upload_file(self, filename, content, author=None):
+    def upload_file(self, filename, content, author=None, overwrite=False):
         handler = self.get_handler()
         folder = self.kwargs["folder"]
         comment = self.request.auth.get_comment(author)
@@ -156,6 +157,7 @@ class FileListView(ConfigMixin, PaginationMixin, APIView):
             filename=filename,
             content=content,
             comment=comment,
+            overwrite=overwrite,
         )
 
     @handler_errors_for_api
