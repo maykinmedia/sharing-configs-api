@@ -60,3 +60,15 @@ class ConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = Config
         fields = ("label", "type")
+
+
+class FolderSerializer(serializers.Serializer):
+    name = serializers.CharField(label=_("name"), help_text=_("Folder name"))
+    children = serializers.SerializerMethodField(
+        help_text=_("Subfolders of the folder")
+    )
+    # todo add rootfolder with permission field
+
+    def get_children(self, obj):
+        serializer = self.__class__(obj.children, many=True)
+        return serializer.data

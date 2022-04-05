@@ -18,7 +18,7 @@ from sharing.utils.mixins import PaginationMixin
 
 from .exceptions import handler_errors_for_api
 from .renders import BinaryFileRenderer
-from .serializers import ConfigSerializer, FileSerializer
+from .serializers import ConfigSerializer, FileSerializer, FolderSerializer
 
 
 class ConfigMixin:
@@ -182,3 +182,23 @@ class ConfigListView(ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         return queryset.filter(client_auths=self.request.auth).distinct()
+
+
+class FolderView(ConfigMixin, APIView):
+    serializer_class = FolderSerializer
+
+    def get(self, request, **kwargs):
+        """List all folders recursively"""
+        folders = self.get_folders()
+
+        serializer = self.serializer_class(instance=folders, many=True)
+        return Response(serializer.data)
+
+    @handler_errors_for_api
+    def get_folders(self):
+        handler = self.get_handler()
+        folders = handler.list_folders()
+
+        # todo add permissions to folders and serialziers
+        # todo add pagination
+        return folders

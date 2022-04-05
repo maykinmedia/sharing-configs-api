@@ -6,6 +6,8 @@ from django.core.exceptions import ImproperlyConfigured
 from sharing.core.constants import ConfigTypes
 from sharing.core.models import Config
 
+from .data import Folder
+
 logger = logging.getLogger(__name__)
 
 registry = {}
@@ -57,6 +59,15 @@ class BaseHandler:
         """
         raise ImproperlyConfigured("'list_files' method should be defined")
 
+    def list_folders(self) -> List[Folder]:
+        """
+        Hook to overwrite. Should include interaction with underlying file storage
+
+        :return: The list of folders for the config. Each folder can have related subfolders
+        :raise: HandlerException
+        """
+        raise ImproperlyConfigured("'list_folders' method should be defined")
+
 
 class DebugHandler(BaseHandler, type=ConfigTypes.debug):
     """handler used for testing, It downloads the example file and uploads file into stdout"""
@@ -76,3 +87,8 @@ class DebugHandler(BaseHandler, type=ConfigTypes.debug):
 
     def list_files(self, folder: str):
         return ["example_file.txt"]
+
+    def list_folders(self):
+        return [
+            Folder(name="example_folder", children=[Folder(name="example_subfolder")])
+        ]
