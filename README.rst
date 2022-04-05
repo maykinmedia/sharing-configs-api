@@ -7,7 +7,7 @@ Sharing Configs API
 :Keywords: ``django``, ``github``
 :PythonVersion: 3.8
 
-|build-status| |requirements|
+|build-status| |docker| |black| |python-versions|
 
 API to share configurations using GitHub
 
@@ -34,13 +34,21 @@ References
 * `Code <https://github.com/maykinmedia/sharing-configs-api.git>`_
 
 
-.. |build-status| image:: http://jenkins.maykin.nl/buildStatus/icon?job=bitbucket/sharing/master
-    :alt: Build status
-    :target: http://jenkins.maykin.nl/job/sharing
 
-.. |requirements| image:: https://requires.io/bitbucket/maykinmedia/sharing/requirements.svg?branch=master
-     :target: https://requires.io/bitbucket/maykinmedia/sharing/requirements/?branch=master
-     :alt: Requirements status
+.. |build-status| image:: https://github.com/maykinmedia/sharing-configs-api/actions/workflows/ci.yml/badge.svg?branch=master
+    :alt: Build status
+    :target: https://github.com/maykinmedia/sharing-configs-api/actions/workflows/ci.yml?branch=master
+
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :alt: Code style
+    :target: https://github.com/psf/black
+
+.. |docker| image:: https://img.shields.io/docker/v/maykinmedia/sharing-configs-api
+    :alt: Docker image
+    :target: https://hub.docker.com/r/maykinmedia/sharing-configs-api
+
+.. |python-versions| image:: https://img.shields.io/badge/python-3.8%2B-blue.svg
+    :alt: Supported Python version
 
 
 .. _Maykin Media B.V.: https://www.maykinmedia.nl
