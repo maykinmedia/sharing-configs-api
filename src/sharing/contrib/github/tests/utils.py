@@ -41,6 +41,7 @@ def mock_github_file(folder, filename, repo="some/repo", **kwargs) -> dict:
         "name": filename,
         "path": path,
         "content": base64.b64encode(b"example content").decode("utf-8"),
+        "sha": "3d21ec53a331a6f037a91c368710b99387d012c1",
         "url": f"https://api.github.com/repos/{repo}/contents/{path}",
         "html_url": f"https://github.com/{repo}/blob/master/{path}",
         "download_url": f"https://raw.githubusercontent.com/{repo}/master/{path}",

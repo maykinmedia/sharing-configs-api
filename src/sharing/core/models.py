@@ -53,9 +53,9 @@ class ClientAuth(models.Model):
         """comment for exported files"""
 
         if author:
-            return f"Automatically created by {author} for {self.organization} using {settings.PROJECT_NAME}"
+            return f"Automatically uploaded by {author} for {self.organization} using {settings.PROJECT_NAME}"
 
-        return f"Automatically created by {self.organization} using {settings.PROJECT_NAME}"
+        return f"Automatically uploaded by {self.organization} using {settings.PROJECT_NAME}"
 
 
 class Config(models.Model):

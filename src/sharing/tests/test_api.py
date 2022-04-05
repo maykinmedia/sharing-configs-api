@@ -22,7 +22,7 @@ class NotFoundHandler:
     def download(self, folder, filename):
         raise HandlerObjectNotFound("not found")
 
-    def upload(self, folder, filename, content, comment):
+    def upload(self, folder, filename, content, comment, overwrite):
         raise HandlerObjectNotFound("not found")
 
     def list_files(self, folder):
@@ -38,7 +38,7 @@ class OtherErrorHandler:
     def download(self, folder, filename):
         raise HandlerException("other error")
 
-    def upload(self, folder, filename, content, comment):
+    def upload(self, folder, filename, content, comment, overwrite):
         raise HandlerException("other error")
 
     def list_files(self, folder):

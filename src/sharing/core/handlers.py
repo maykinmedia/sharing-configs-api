@@ -33,7 +33,14 @@ class BaseHandler:
         """
         raise ImproperlyConfigured("'download_content' method should be defined")
 
-    def upload(self, folder: str, filename: str, content: bytes, comment: str) -> None:
+    def upload(
+        self,
+        folder: str,
+        filename: str,
+        content: bytes,
+        comment: str,
+        overwrite: bool = False,
+    ) -> None:
         """
         Hook to overwrite. Should include interaction with underlying file storage
 
@@ -63,6 +70,7 @@ class DebugHandler(BaseHandler, type=ConfigTypes.debug):
         filename: str,
         content: bytes,
         comment: str,
+        overwrite: bool = False,
     ):
         logger.info(f"DebugHandler: {comment}")
 
