@@ -100,9 +100,9 @@ ENV RELEASE=${RELEASE} \
 ARG SECRET_KEY=dummy
 
 LABEL org.label-schema.vcs-ref=$COMMIT_HASH \
-      org.label-schema.vcs-url="https://github.com/maykinmedia/sharing" \
+      org.label-schema.vcs-url="https://github.com/maykinmedia/sharing-configs-api" \
       org.label-schema.version=$RELEASE \
-      org.label-schema.name="sharing"
+      org.label-schema.name="sharing-configs-api"
 
 # Run collectstatic and compilemessages, so the result is already included in
 # the image
