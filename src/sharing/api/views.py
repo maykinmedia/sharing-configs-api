@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 
 from sharing.core.handlers import BaseHandler, registry
 from sharing.core.models import Config
+from sharing.core.permissions import IsTokenAuthenticated, RootPathPermission
 from sharing.utils.mixins import PaginationMixin
 
 from .exceptions import handler_errors_for_api
@@ -33,6 +34,7 @@ class ConfigMixin:
 
 class FileDetailView(ConfigMixin, APIView):
     renderer_classes = [BinaryFileRenderer]
+    permission_classes = [IsTokenAuthenticated, RootPathPermission]
 
     @extend_schema(
         operation_id="file_download",
@@ -105,6 +107,7 @@ class FileDetailView(ConfigMixin, APIView):
 class FileListView(ConfigMixin, PaginationMixin, APIView):
     serializer_class = FileSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsTokenAuthenticated, RootPathPermission]
 
     @extend_schema(
         operation_id="file_upload",
