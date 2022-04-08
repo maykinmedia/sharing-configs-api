@@ -12,6 +12,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from sharing.core.constants import PermissionModes
 from sharing.core.handlers import BaseHandler, registry
 from sharing.core.models import Config
 from sharing.core.permissions import IsTokenAuthenticated, RootPathPermission
@@ -19,7 +20,12 @@ from sharing.utils.mixins import PaginationMixin
 
 from .exceptions import handler_errors_for_api
 from .renders import BinaryFileRenderer
-from .serializers import ConfigSerializer, FileSerializer, RootFolderSerializer
+from .serializers import (
+    ConfigSerializer,
+    FileSerializer,
+    FolderQuerySerializer,
+    RootFolderSerializer,
+)
 
 
 class ConfigMixin:
@@ -189,6 +195,7 @@ class ConfigListView(ListAPIView):
 
 class FolderView(ConfigMixin, PaginationMixin, APIView):
     serializer_class = RootFolderSerializer
+    pagination_class = PageNumberPagination
 
     @extend_schema(
         parameters=[
@@ -198,8 +205,16 @@ class FolderView(ConfigMixin, PaginationMixin, APIView):
                 location=OpenApiParameter.PATH,
                 required=True,
                 description=_(
-                    "Name of the configuration Used to define the parameters for file storage backend"
+                    "Name of the configuration. Used to define the parameters for file storage backend"
                 ),
+            ),
+            OpenApiParameter(
+                name="permission",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                enum=PermissionModes.labels,
+                description=_("Permission mode for the folder"),
             ),
         ],
         operation_id="folder_list",
@@ -208,10 +223,17 @@ class FolderView(ConfigMixin, PaginationMixin, APIView):
     )
     def get(self, request, **kwargs):
         """List all folders with their subfolders"""
-        folders = self.get_folders()
-        # todo filter on permission type
+        # validate query params
+        query_serializer = FolderQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+        permission_type = query_serializer.data.get("permission")
 
-        page = self.paginate_objects(folders)
+        folders = self.get_folders()
+        allowed_folders = self.get_allowed_folders(
+            folders, permission_type=permission_type
+        )
+
+        page = self.paginate_objects(allowed_folders)
         serializer = self.get_serializer(instance=page)
         return self.get_paginated_response(serializer.data)
 
@@ -227,13 +249,16 @@ class FolderView(ConfigMixin, PaginationMixin, APIView):
         handler = self.get_handler()
         folders = handler.list_folders()
 
-        return self.get_allowed_folders(folders)
+        return folders
 
-    def get_allowed_folders(self, folders):
+    def get_allowed_folders(self, folders, permission_type=None):
         """filter available folders based on root path config"""
+        root_paths = self.get_config().root_paths.all()
+        if permission_type:
+            root_paths = root_paths.filter(permission=permission_type)
+
         root_path_permissions = {
-            root_path.folder: root_path.permission
-            for root_path in self.get_config().root_paths.all()
+            root_path.folder: root_path.permission for root_path in root_paths
         }
         allowed_folders = []
         for folder in folders:

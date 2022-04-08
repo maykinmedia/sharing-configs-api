@@ -86,3 +86,12 @@ class RootFolderSerializer(FolderSerializer):
     def get_children(self, obj):
         """just for schema doc"""
         return super().get_children(obj)
+
+
+class FolderQuerySerializer(serializers.Serializer):
+    permission = serializers.ChoiceField(
+        label=_("permission"),
+        required=False,
+        choices=PermissionModes.choices,
+        help_text=_("Permission mode for the folder"),
+    )
