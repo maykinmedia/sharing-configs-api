@@ -72,3 +72,18 @@ def mock_github_update_file(folder, filename, repo="some/repo", **kwargs) -> dic
         data.update(kwargs)
 
     return data
+
+
+def mock_github_folder(folder, repo="some/repo", **kwargs) -> dict:
+    folder_data = {
+        "type": "dir",
+        "size": 0,
+        "name": folder,
+        "path": folder,
+        "sha": "3d21ec53a331a6f037a91c368710b99387d012c1",
+        "url": f"https://api.github.com/repos/{repo}/contents/{folder}",
+    }
+    if kwargs:
+        folder_data.update(kwargs)
+
+    return folder_data

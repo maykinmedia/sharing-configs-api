@@ -23,8 +23,9 @@ class TokenAuthTests(APITestCase):
                 "file-list", kwargs={"label": "some-label", "folder": "some/folder"}
             ),
         ]
+        self.folder_url = reverse("folder-list", kwargs={"label": "some-label"})
         self.config_url = reverse("config-list")
-        self.urls = self.file_urls + [self.config_url]
+        self.urls = self.file_urls + [self.folder_url, self.config_url]
 
     def test_non_auth(self):
         for url in self.urls:

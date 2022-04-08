@@ -14,9 +14,23 @@ paths:
         name: label
         schema:
           type: string
-        description: Name of the configuration Used to define the parameters for file
-          storage backend
+        description: Name of the configuration. Used to define the parameters for
+          file storage backend
         required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: permission
+        schema:
+          type: string
+          enum:
+          - read
+          - write
+        description: Permission mode for the folder
       tags:
       - files
       security:
@@ -26,9 +40,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RootFolder'
+                $ref: '#/components/schemas/PaginatedRootFolderList'
           description: ''
   /api/v1/config/{label}/folder/{folder}/files/:
     get:
@@ -261,6 +273,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/File'
+    PaginatedRootFolderList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RootFolder'
     PermissionEnum:
       enum:
       - read

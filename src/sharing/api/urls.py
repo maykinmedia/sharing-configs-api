@@ -34,7 +34,7 @@ urlpatterns = [
                 path(
                     "config/<str:label>/folder/",
                     FolderView.as_view(),
-                    name="folder-root",
+                    name="folder-list",
                 ),
                 path("configs/", ConfigListView.as_view(), name="config-list"),
             ]

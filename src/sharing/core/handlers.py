@@ -90,5 +90,11 @@ class DebugHandler(BaseHandler, type=ConfigTypes.debug):
 
     def list_folders(self):
         return [
-            Folder(name="example_folder", children=[Folder(name="example_subfolder")])
+            Folder(
+                name="example_folder",
+                children=[
+                    Folder(name="example_subfolder"),
+                ],
+            ),
+            Folder(name="example_other_folder"),
         ]
