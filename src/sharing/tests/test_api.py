@@ -9,7 +9,7 @@ from rest_framework.test import APITestCase
 from sharing.core.constants import ConfigTypes
 from sharing.core.exceptions import HandlerException, HandlerObjectNotFound
 
-from .factories import ConfigFactory
+from .factories import ConfigFactory, RootPathConfigFactory
 from .utils import TokenAuthMixin
 
 
@@ -54,6 +54,8 @@ class DownloadFileTests(TokenAuthMixin, APITestCase):
         super().setUp()
 
         self.config = ConfigFactory.create(client_auth=self.client_auth)
+        RootPathConfigFactory.create(config=self.config, folder="some")
+
         self.url = reverse(
             "file-download",
             kwargs={
@@ -89,6 +91,7 @@ class UploadFileTests(TokenAuthMixin, APITestCase):
         super().setUp()
 
         self.config = ConfigFactory.create(client_auth=self.client_auth)
+        RootPathConfigFactory.create(config=self.config, folder="some")
         self.url = reverse(
             "file-list", kwargs={"label": self.config.label, "folder": "some/folder"}
         )
@@ -150,6 +153,7 @@ class ListFilesTests(TokenAuthMixin, APITestCase):
         super().setUp()
 
         self.config = ConfigFactory.create(client_auth=self.client_auth)
+        RootPathConfigFactory.create(config=self.config, folder="some")
         self.url = reverse(
             "file-list", kwargs={"label": self.config.label, "folder": "some/folder"}
         )

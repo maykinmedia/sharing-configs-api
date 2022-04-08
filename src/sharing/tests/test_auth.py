@@ -3,7 +3,9 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .factories import ClientAuthFactory, ConfigFactory
+from sharing.core.constants import PermissionModes
+
+from .factories import ClientAuthFactory, ConfigFactory, RootPathConfigFactory
 
 
 class TokenAuthTests(APITestCase):
@@ -38,7 +40,7 @@ class TokenAuthTests(APITestCase):
                 response = self.client.get(url, HTTP_AUTHORIZATION="Token 12345")
                 self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_invalid_slug(self):
+    def test_invalid_label(self):
         client_auth = ClientAuthFactory.create()
         config = ConfigFactory.create()
         for url in self.file_urls:
@@ -47,3 +49,29 @@ class TokenAuthTests(APITestCase):
                     url, HTTP_AUTHORIZATION=f"Token {client_auth.token}"
                 )
                 self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_no_root_path_config(self):
+        client_auth = ClientAuthFactory.create()
+        config = ConfigFactory.create(label="some-label", client_auth=client_auth)
+        for url in self.file_urls:
+            with self.subTest(url=url):
+                response = self.client.get(
+                    url, HTTP_AUTHORIZATION=f"Token {client_auth.token}"
+                )
+                self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_insufficient_permission_in_root_config(self):
+        client_auth = ClientAuthFactory.create()
+        config = ConfigFactory.create(label="some-label", client_auth=client_auth)
+        RootPathConfigFactory.create(
+            config=config, folder="some", permission=PermissionModes.read
+        )
+        upload_url = reverse(
+            "file-list", kwargs={"label": "some-label", "folder": "some/folder"}
+        )
+
+        response = self.client.post(
+            upload_url, HTTP_AUTHORIZATION=f"Token {client_auth.token}"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
