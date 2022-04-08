@@ -18,7 +18,7 @@ from sharing.utils.mixins import PaginationMixin
 
 from .exceptions import handler_errors_for_api
 from .renders import BinaryFileRenderer
-from .serializers import ConfigSerializer, FileSerializer, FolderSerializer
+from .serializers import ConfigSerializer, FileSerializer, RootFolderSerializer
 
 
 class ConfigMixin:
@@ -185,13 +185,14 @@ class ConfigListView(ListAPIView):
 
 
 class FolderView(ConfigMixin, APIView):
-    serializer_class = FolderSerializer
+    serializer_class = RootFolderSerializer
 
     def get(self, request, **kwargs):
         """List all folders recursively"""
         folders = self.get_folders()
-
+        # todo filter on permission type
         serializer = self.serializer_class(instance=folders, many=True)
+        # todo add pagination
         return Response(serializer.data)
 
     @handler_errors_for_api
@@ -199,6 +200,20 @@ class FolderView(ConfigMixin, APIView):
         handler = self.get_handler()
         folders = handler.list_folders()
 
-        # todo add permissions to folders and serialziers
-        # todo add pagination
-        return folders
+        return self.get_allowed_folders(folders)
+
+    def get_allowed_folders(self, folders):
+        """filter available folders based on root path config"""
+        root_path_permissions = {
+            root_path.folder: root_path.permission
+            for root_path in self.get_config().root_paths.all()
+        }
+        allowed_folders = []
+        for folder in folders:
+            if folder.name not in root_path_permissions:
+                continue
+
+            folder.permission = root_path_permissions[folder.name]
+            allowed_folders.append(folder)
+
+        return allowed_folders

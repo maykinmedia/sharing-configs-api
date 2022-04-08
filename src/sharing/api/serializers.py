@@ -4,6 +4,7 @@ from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 from rest_framework import fields, serializers
 from rest_framework.reverse import reverse
 
+from sharing.core.constants import PermissionModes
 from sharing.core.models import Config
 
 from .fields import AnyBase64FileField
@@ -67,8 +68,15 @@ class FolderSerializer(serializers.Serializer):
     children = serializers.SerializerMethodField(
         help_text=_("Subfolders of the folder")
     )
-    # todo add rootfolder with permission field
 
     def get_children(self, obj):
-        serializer = self.__class__(obj.children, many=True)
+        serializer = FolderSerializer(obj.children, many=True)
         return serializer.data
+
+
+class RootFolderSerializer(FolderSerializer):
+    permission = serializers.ChoiceField(
+        label=_("permission"),
+        choices=PermissionModes.choices,
+        help_text=_("Permission mode for the folder"),
+    )
