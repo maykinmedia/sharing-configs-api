@@ -69,6 +69,7 @@ class FolderSerializer(serializers.Serializer):
         help_text=_("Subfolders of the folder")
     )
 
+    @extend_schema_field(list)
     def get_children(self, obj):
         serializer = FolderSerializer(obj.children, many=True)
         return serializer.data
@@ -80,3 +81,8 @@ class RootFolderSerializer(FolderSerializer):
         choices=PermissionModes.choices,
         help_text=_("Permission mode for the folder"),
     )
+
+    @extend_schema_field(FolderSerializer(many=True))
+    def get_children(self, obj):
+        """just for schema doc"""
+        return super().get_children(obj)

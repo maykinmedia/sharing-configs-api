@@ -187,16 +187,40 @@ class ConfigListView(ListAPIView):
         return queryset.filter(client_auths=self.request.auth).distinct()
 
 
-class FolderView(ConfigMixin, APIView):
+class FolderView(ConfigMixin, PaginationMixin, APIView):
     serializer_class = RootFolderSerializer
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="label",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                required=True,
+                description=_(
+                    "Name of the configuration Used to define the parameters for file storage backend"
+                ),
+            ),
+        ],
+        operation_id="folder_list",
+        summary=_("List folders"),
+        tags=["files"],
+    )
     def get(self, request, **kwargs):
-        """List all folders recursively"""
+        """List all folders with their subfolders"""
         folders = self.get_folders()
         # todo filter on permission type
-        serializer = self.serializer_class(instance=folders, many=True)
-        # todo add pagination
-        return Response(serializer.data)
+
+        page = self.paginate_objects(folders)
+        serializer = self.get_serializer(instance=page)
+        return self.get_paginated_response(serializer.data)
+
+    def get_serializer(self, **kwargs):
+        return self.serializer_class(
+            many=True,
+            context={"request": self.request, "view": self},
+            **kwargs,
+        )
 
     @handler_errors_for_api
     def get_folders(self):

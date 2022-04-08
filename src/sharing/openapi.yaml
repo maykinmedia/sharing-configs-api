@@ -4,6 +4,32 @@ info:
   version: 0.1.0
   description: An API to share configuration files using different backends
 paths:
+  /api/v1/config/{label}/folder/:
+    get:
+      operationId: folder_list
+      description: List all folders with their subfolders
+      summary: List folders
+      parameters:
+      - in: path
+        name: label
+        schema:
+          type: string
+        description: Name of the configuration Used to define the parameters for file
+          storage backend
+        required: true
+      tags:
+      - files
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RootFolder'
+          description: ''
   /api/v1/config/{label}/folder/{folder}/files/:
     get:
       operationId: file_list
@@ -181,6 +207,20 @@ components:
       required:
       - content
       - filename
+    Folder:
+      type: object
+      properties:
+        name:
+          type: string
+          title: naam
+          description: Folder name
+        children:
+          type: array
+          items: {}
+          readOnly: true
+          description: Subfolders of the folder
+      required:
+      - name
     PaginatedConfigList:
       type: object
       properties:
@@ -221,6 +261,32 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/File'
+    PermissionEnum:
+      enum:
+      - read
+      - write
+      type: string
+    RootFolder:
+      type: object
+      properties:
+        name:
+          type: string
+          title: naam
+          description: Folder name
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Folder'
+          readOnly: true
+          description: Subfolders of the folder
+        permission:
+          allOf:
+          - $ref: '#/components/schemas/PermissionEnum'
+          title: recht
+          description: Permission mode for the folder
+      required:
+      - name
+      - permission
     TypeEnum:
       enum:
       - github
