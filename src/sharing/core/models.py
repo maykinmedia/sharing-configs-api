@@ -72,25 +72,15 @@ class Config(models.Model):
         default=ConfigTypes.github,
         help_text=_("Type of the config"),
     )
-    access_token = models.CharField(
-        _("access token"),
-        max_length=250,
+    options = models.JSONField(
+        _("options"),
+        default=dict,
         blank=True,
+        null=True,
         help_text=_(
-            "Access token for GitHub authorization. Can be generated at https://github.com/settings/tokens"
+            "Configuration-specific options. The shape of the field is described "
+            "in the `handler.configuration_options` "
         ),
-    )
-    repo = models.CharField(
-        _("repo"),
-        max_length=250,
-        blank=True,
-        help_text=_("GitHub repository in the format {owner}/{name}"),
-    )
-    branch = models.CharField(
-        _("branch"),
-        max_length=250,
-        blank=True,
-        help_text=_("GitHub branch to use, if empty the default branch is used"),
     )
 
     class Meta:
@@ -104,20 +94,6 @@ class Config(models.Model):
         self.label = slugify(self.label)
 
         super().save(**kwargs)
-
-    def clean(self):
-        super().clean()
-
-        if self.type == ConfigTypes.github:
-            if not self.access_token:
-                raise ValidationError(
-                    {"access_token": "This field is required for GitHub config"}
-                )
-
-            if not self.repo:
-                raise ValidationError(
-                    {"repo": "This field is required for GitHub config"}
-                )
 
 
 class RootPathConfig(models.Model):

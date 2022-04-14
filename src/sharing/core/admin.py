@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.utils.translation import gettext_lazy as _
 
 from .models import ClientAuth, Config, RootPathConfig
 
@@ -24,12 +23,9 @@ class ConfigAdmin(admin.ModelAdmin):
     search_fields = ("label",)
 
     # detail
-    fieldsets = (
-        (None, {"fields": ("label", "type")}),
-        (_("Github"), {"fields": ("access_token", "repo", "branch")}),
-    )
     inlines = [RootPathConfigInline]
 
+    # todo display and/or validate options based on serializer class
     def display_client_auths(self, obj):
         return ", ".join(c.organization for c in obj.client_auths.all())
 
