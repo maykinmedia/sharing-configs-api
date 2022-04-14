@@ -4,6 +4,7 @@ from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 from rest_framework import fields, serializers
 from rest_framework.reverse import reverse
 
+from sharing.core.constants import PermissionModes
 from sharing.core.models import Config
 
 from .fields import AnyBase64FileField
@@ -60,3 +61,37 @@ class ConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = Config
         fields = ("label", "type")
+
+
+class FolderSerializer(serializers.Serializer):
+    name = serializers.CharField(label=_("name"), help_text=_("Folder name"))
+    children = serializers.SerializerMethodField(
+        help_text=_("Subfolders of the folder")
+    )
+
+    @extend_schema_field(list)
+    def get_children(self, obj):
+        serializer = FolderSerializer(obj.children, many=True)
+        return serializer.data
+
+
+class RootFolderSerializer(FolderSerializer):
+    permission = serializers.ChoiceField(
+        label=_("permission"),
+        choices=PermissionModes.choices,
+        help_text=_("Permission mode for the folder"),
+    )
+
+    @extend_schema_field(FolderSerializer(many=True))
+    def get_children(self, obj):
+        """just for schema doc"""
+        return super().get_children(obj)
+
+
+class FolderQuerySerializer(serializers.Serializer):
+    permission = serializers.ChoiceField(
+        label=_("permission"),
+        required=False,
+        choices=PermissionModes.choices,
+        help_text=_("Permission mode for the folder"),
+    )

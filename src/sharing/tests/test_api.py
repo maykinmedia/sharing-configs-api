@@ -6,10 +6,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from sharing.core.constants import ConfigTypes
+from sharing.core.constants import ConfigTypes, PermissionModes
 from sharing.core.exceptions import HandlerException, HandlerObjectNotFound
 
-from .factories import ConfigFactory
+from .factories import ConfigFactory, RootPathConfigFactory
 from .utils import TokenAuthMixin
 
 
@@ -44,6 +44,9 @@ class OtherErrorHandler:
     def list_files(self, folder):
         raise HandlerException("other error")
 
+    def list_folders(self):
+        raise HandlerException("other error")
+
 
 not_found_registry = {ConfigTypes.debug: NotFoundHandler}
 other_error_registry = {ConfigTypes.debug: OtherErrorHandler}
@@ -54,6 +57,8 @@ class DownloadFileTests(TokenAuthMixin, APITestCase):
         super().setUp()
 
         self.config = ConfigFactory.create(client_auth=self.client_auth)
+        RootPathConfigFactory.create(config=self.config, folder="some")
+
         self.url = reverse(
             "file-download",
             kwargs={
@@ -89,6 +94,7 @@ class UploadFileTests(TokenAuthMixin, APITestCase):
         super().setUp()
 
         self.config = ConfigFactory.create(client_auth=self.client_auth)
+        RootPathConfigFactory.create(config=self.config, folder="some")
         self.url = reverse(
             "file-list", kwargs={"label": self.config.label, "folder": "some/folder"}
         )
@@ -150,6 +156,7 @@ class ListFilesTests(TokenAuthMixin, APITestCase):
         super().setUp()
 
         self.config = ConfigFactory.create(client_auth=self.client_auth)
+        RootPathConfigFactory.create(config=self.config, folder="some")
         self.url = reverse(
             "file-list", kwargs={"label": self.config.label, "folder": "some/folder"}
         )
@@ -193,3 +200,104 @@ class ListFilesTests(TokenAuthMixin, APITestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class ListFoldersTests(TokenAuthMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.config = ConfigFactory.create(client_auth=self.client_auth)
+        self.url = reverse("folder-list", kwargs={"label": self.config.label})
+
+    def test_list_folders(self):
+        RootPathConfigFactory.create(config=self.config, folder="example_folder")
+        RootPathConfigFactory.create(config=self.config, folder="example_other_folder")
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(),
+            {
+                "count": 2,
+                "next": None,
+                "previous": None,
+                "results": [
+                    {
+                        "name": "example_folder",
+                        "children": [{"name": "example_subfolder", "children": []}],
+                        "permission": "write",
+                    },
+                    {
+                        "name": "example_other_folder",
+                        "children": [],
+                        "permission": "write",
+                    },
+                ],
+            },
+        )
+
+    @patch.dict("sharing.api.views.registry", other_error_registry)
+    def test_list_folders_error(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_list_folders_no_root_path_config(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(), {"count": 0, "next": None, "previous": None, "results": []}
+        )
+
+    def test_list_folders_only_in_root_path_config(self):
+        RootPathConfigFactory.create(config=self.config, folder="example_folder")
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(),
+            {
+                "count": 1,
+                "next": None,
+                "previous": None,
+                "results": [
+                    {
+                        "name": "example_folder",
+                        "children": [{"name": "example_subfolder", "children": []}],
+                        "permission": "write",
+                    },
+                ],
+            },
+        )
+
+    def test_list_folders_filter_on_permission(self):
+        RootPathConfigFactory.create(
+            config=self.config,
+            folder="example_folder",
+            permission=PermissionModes.write,
+        )
+        RootPathConfigFactory.create(
+            config=self.config,
+            folder="example_other_folder",
+            permission=PermissionModes.read,
+        )
+
+        response = self.client.get(self.url, {"permission": PermissionModes.write})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(),
+            {
+                "count": 1,
+                "next": None,
+                "previous": None,
+                "results": [
+                    {
+                        "name": "example_folder",
+                        "children": [{"name": "example_subfolder", "children": []}],
+                        "permission": "write",
+                    },
+                ],
+            },
+        )

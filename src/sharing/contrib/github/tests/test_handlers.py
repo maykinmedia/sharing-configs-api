@@ -2,11 +2,17 @@ from django.test import TestCase
 
 import requests_mock
 
+from sharing.core.data import Folder
 from sharing.core.exceptions import HandlerException, HandlerObjectNotFound
 from sharing.tests.factories import ConfigFactory, ConfigTypes
 
 from ..handlers import GitHubHandler
-from .utils import mock_github_file, mock_github_repo, mock_github_update_file
+from .utils import (
+    mock_github_file,
+    mock_github_folder,
+    mock_github_repo,
+    mock_github_update_file,
+)
 
 GITHUB_BASE_URL = "https://api.github.com:443/"
 
@@ -183,3 +189,59 @@ class GitHubHandlerTests(TestCase):
                 content=b"example content",
                 comment="some comment",
             )
+
+    def test_list_folders(self, m):
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            json=mock_github_repo(name=self.config.repo),
+        )
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/",
+            json=[mock_github_folder("some", repo=self.config.repo)],
+        )
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/some",
+            json=[mock_github_file(self.folder, "somefile.txt", repo=self.config.repo)],
+        )
+
+        folders = self.handler.list_folders()
+
+        self.assertEqual(folders, [Folder(name="some", children=[])])
+
+    def test_list_folders_with_subfolders(self, m):
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            json=mock_github_repo(name=self.config.repo),
+        )
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/",
+            json=[mock_github_folder("some", repo=self.config.repo)],
+        )
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/some",
+            json=[
+                mock_github_folder(
+                    "subfolder", repo=self.config.repo, path="some/subfolder"
+                )
+            ],
+        )
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/some/subfolder",
+            json=[mock_github_file("subfolder", "somefile.txt", repo=self.config.repo)],
+        )
+
+        folders = self.handler.list_folders()
+
+        self.assertEqual(
+            folders,
+            [Folder(name="some", children=[Folder(name="subfolder", children=[])])],
+        )
+
+    def test_list_folders_error(self, m):
+        m.get(
+            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            status_code=400,
+            json={"message": "Client Error"},
+        )
+        with self.assertRaises(HandlerException):
+            self.handler.list_folders()

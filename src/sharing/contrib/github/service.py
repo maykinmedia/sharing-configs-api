@@ -4,6 +4,7 @@ from typing import List
 
 from github import ContentFile, Github, GithubObject
 
+from sharing.core.data import Folder
 from sharing.core.models import Config
 
 logger = logging.getLogger(__name__)
@@ -92,3 +93,24 @@ def update_file(
     )
 
     return updated["content"]
+
+
+def get_folders(config: Config) -> List[Folder]:
+    """
+    Return the content of the folder
+
+    :calls: `GET /repos/{owner}/{repo}/contents/{path} for each folder starting from root
+    """
+    g = Github(config.access_token)
+    repo = g.get_repo(config.repo)
+    branch = config.branch or GithubObject.NotSet
+
+    def get_subfolders(path) -> List[Folder]:
+        contents = repo.get_contents(path, ref=branch)
+        return [
+            Folder(name=content.name, children=get_subfolders(content.path))
+            for content in contents
+            if content.type == "dir"
+        ]
+
+    return get_subfolders("")

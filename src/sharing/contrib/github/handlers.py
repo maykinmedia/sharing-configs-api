@@ -4,7 +4,13 @@ from sharing.core.constants import ConfigTypes
 from sharing.core.exceptions import HandlerException, HandlerObjectNotFound
 from sharing.core.handlers import BaseHandler
 
-from .service import create_file, get_file, get_files_in_folder, update_file
+from .service import (
+    create_file,
+    get_file,
+    get_files_in_folder,
+    get_folders,
+    update_file,
+)
 
 
 def github_error_handler(func):
@@ -57,3 +63,7 @@ class GitHubHandler(BaseHandler, type=ConfigTypes.github):
     def list_files(self, folder: str):
         content_files = get_files_in_folder(self.config, folder)
         return [file.name for file in content_files]
+
+    @github_error_handler
+    def list_folders(self):
+        return get_folders(self.config)

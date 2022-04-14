@@ -2,7 +2,7 @@ from django.urls import include, path
 
 from drf_spectacular.views import SpectacularRedocView, SpectacularYAMLAPIView
 
-from .views import ConfigListView, FileDetailView, FileListView
+from .views import ConfigListView, FileDetailView, FileListView, FolderView
 
 urlpatterns = [
     path(
@@ -30,6 +30,11 @@ urlpatterns = [
                     "config/<str:label>/folder/<path:folder>/files/",
                     FileListView.as_view(),
                     name="file-list",
+                ),
+                path(
+                    "config/<str:label>/folder/",
+                    FolderView.as_view(),
+                    name="folder-list",
                 ),
                 path("configs/", ConfigListView.as_view(), name="config-list"),
             ]

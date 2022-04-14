@@ -1,6 +1,6 @@
 import factory
 
-from sharing.core.constants import ConfigTypes
+from sharing.core.constants import ConfigTypes, PermissionModes
 
 
 class ClientAuthFactory(factory.django.DjangoModelFactory):
@@ -25,3 +25,12 @@ class ConfigFactory(factory.django.DjangoModelFactory):
 
         if extracted:
             self.client_auths.add(extracted)
+
+
+class RootPathConfigFactory(factory.django.DjangoModelFactory):
+    config = factory.SubFactory(ConfigFactory)
+    folder = factory.Faker("word")
+    permission = PermissionModes.write
+
+    class Meta:
+        model = "core.RootPathConfig"

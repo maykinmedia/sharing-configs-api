@@ -7,7 +7,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-from .constants import ConfigTypes
+from .constants import ConfigTypes, PermissionModes
 
 
 class ClientAuth(models.Model):
@@ -118,3 +118,28 @@ class Config(models.Model):
                 raise ValidationError(
                     {"repo": "This field is required for GitHub config"}
                 )
+
+
+class RootPathConfig(models.Model):
+    config = models.ForeignKey(
+        Config,
+        on_delete=models.CASCADE,
+        related_name="root_paths",
+        help_text=_("Config for which the root path is defined"),
+    )
+    folder = models.CharField(
+        _("folder"), max_length=200, help_text=_("Folder in the root")
+    )
+    permission = models.CharField(
+        _("permission"),
+        choices=PermissionModes.choices,
+        max_length=20,
+        help_text=_("Permission for the folder"),
+    )
+
+    class Meta:
+        verbose_name = _("Root path configuration")
+        verbose_name_plural = _("Root path configurations")
+
+    def __str__(self):
+        return f"{self.config}: {self.folder}"

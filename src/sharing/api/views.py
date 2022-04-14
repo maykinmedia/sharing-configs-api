@@ -12,13 +12,20 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from sharing.core.constants import PermissionModes
 from sharing.core.handlers import BaseHandler, registry
 from sharing.core.models import Config
+from sharing.core.permissions import IsTokenAuthenticated, RootPathPermission
 from sharing.utils.mixins import PaginationMixin
 
 from .exceptions import handler_errors_for_api
 from .renders import BinaryFileRenderer
-from .serializers import ConfigSerializer, FileSerializer
+from .serializers import (
+    ConfigSerializer,
+    FileSerializer,
+    FolderQuerySerializer,
+    RootFolderSerializer,
+)
 
 
 class ConfigMixin:
@@ -33,6 +40,7 @@ class ConfigMixin:
 
 class FileDetailView(ConfigMixin, APIView):
     renderer_classes = [BinaryFileRenderer]
+    permission_classes = [IsTokenAuthenticated, RootPathPermission]
 
     @extend_schema(
         operation_id="file_download",
@@ -105,6 +113,7 @@ class FileDetailView(ConfigMixin, APIView):
 class FileListView(ConfigMixin, PaginationMixin, APIView):
     serializer_class = FileSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsTokenAuthenticated, RootPathPermission]
 
     @extend_schema(
         operation_id="file_upload",
@@ -182,3 +191,81 @@ class ConfigListView(ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         return queryset.filter(client_auths=self.request.auth).distinct()
+
+
+class FolderView(ConfigMixin, PaginationMixin, APIView):
+    serializer_class = RootFolderSerializer
+    pagination_class = PageNumberPagination
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="label",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                required=True,
+                description=_(
+                    "Name of the configuration. Used to define the parameters for file storage backend"
+                ),
+            ),
+            OpenApiParameter(
+                name="permission",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                enum=PermissionModes.labels,
+                description=_("Permission mode for the folder"),
+            ),
+        ],
+        operation_id="folder_list",
+        summary=_("List folders"),
+        tags=["files"],
+    )
+    def get(self, request, **kwargs):
+        """List all folders with their subfolders"""
+        # validate query params
+        query_serializer = FolderQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+        permission_type = query_serializer.data.get("permission")
+
+        folders = self.get_folders()
+        allowed_folders = self.get_allowed_folders(
+            folders, permission_type=permission_type
+        )
+
+        page = self.paginate_objects(allowed_folders)
+        serializer = self.get_serializer(instance=page)
+        return self.get_paginated_response(serializer.data)
+
+    def get_serializer(self, **kwargs):
+        return self.serializer_class(
+            many=True,
+            context={"request": self.request, "view": self},
+            **kwargs,
+        )
+
+    @handler_errors_for_api
+    def get_folders(self):
+        handler = self.get_handler()
+        folders = handler.list_folders()
+
+        return folders
+
+    def get_allowed_folders(self, folders, permission_type=None):
+        """filter available folders based on root path config"""
+        root_paths = self.get_config().root_paths.all()
+        if permission_type:
+            root_paths = root_paths.filter(permission=permission_type)
+
+        root_path_permissions = {
+            root_path.folder: root_path.permission for root_path in root_paths
+        }
+        allowed_folders = []
+        for folder in folders:
+            if folder.name not in root_path_permissions:
+                continue
+
+            folder.permission = root_path_permissions[folder.name]
+            allowed_folders.append(folder)
+
+        return allowed_folders
