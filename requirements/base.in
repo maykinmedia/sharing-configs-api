@@ -23,6 +23,7 @@ djangorestframework
 drf-spectacular  # api documentation
 drf-extra-fields
 # django-filter
+git+https://github.com/maykinmedia/drf_jsonschema.git@b7a482670274d11c1849e625a704018f1e9dd852#egg=drf_jsonschema
 
 # WSGI servers & monitoring - production oriented
 uwsgi
