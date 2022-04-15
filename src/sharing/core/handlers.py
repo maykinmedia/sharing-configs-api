@@ -1,12 +1,14 @@
 import logging
-from typing import List
+from typing import List, Type
 
 from django.core.exceptions import ImproperlyConfigured
 
+from rest_framework import serializers
+
 from sharing.core.constants import ConfigTypes
-from sharing.core.models import Config
 
 from .data import Folder
+from .serializers import JsonSchemaSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +18,16 @@ registry = {}
 class BaseHandler:
     """
     Base class for Sharing Config handlers.
+    A handler class is the combination of a handler callbacks and a set of options that
+    are handler specific
     """
 
-    def __init__(self, config: Config):
+    configuration_options: Type[serializers.Serializer] = JsonSchemaSerializer
+    """
+    A serializer class describing the handler-specific configuration options.
+    """
+
+    def __init__(self, config):
         self.config = config
 
     def __init_subclass__(cls, /, type: str, **kwargs):

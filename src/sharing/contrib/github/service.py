@@ -16,9 +16,9 @@ def get_file(config: Config, folder: str, filename: str) -> ContentFile.ContentF
 
     :calls: `GET /repos/{owner}/{repo}/contents/{path}
     """
-    g = Github(config.access_token)
-    repo = g.get_repo(config.repo)
-    branch = config.branch or GithubObject.NotSet
+    g = Github(config.options["access_token"])
+    repo = g.get_repo(config.options["repo"])
+    branch = config.options.get("branch") or GithubObject.NotSet
 
     file_path = os.path.join(folder, filename)
 
@@ -34,9 +34,9 @@ def create_file(
     :calls: `PUT /repos/{owner}/{repo}/contents/{path}
     """
 
-    g = Github(config.access_token)
-    repo = g.get_repo(config.repo)
-    branch = config.branch or GithubObject.NotSet
+    g = Github(config.options["access_token"])
+    repo = g.get_repo(config.options["repo"])
+    branch = config.options.get("branch") or GithubObject.NotSet
 
     path = os.path.join(folder, filename)
     created = repo.create_file(
@@ -56,9 +56,9 @@ def get_files_in_folder(config: Config, folder: str) -> List[ContentFile.Content
 
     :calls: `GET /repos/{owner}/{repo}/contents/{path}
     """
-    g = Github(config.access_token)
-    repo = g.get_repo(config.repo)
-    branch = config.branch or GithubObject.NotSet
+    g = Github(config.options["access_token"])
+    repo = g.get_repo(config.options["repo"])
+    branch = config.options.get("branch") or GithubObject.NotSet
 
     files = [
         content
@@ -78,9 +78,9 @@ def update_file(
     :calls: `PUT /repos/{owner}/{repo}/contents/{path}
     """
 
-    g = Github(config.access_token)
-    repo = g.get_repo(config.repo)
-    branch = config.branch or GithubObject.NotSet
+    g = Github(config.options["access_token"])
+    repo = g.get_repo(config.options["repo"])
+    branch = config.options.get("branch") or GithubObject.NotSet
 
     path = os.path.join(folder, filename)
     old_content = repo.get_contents(path)
@@ -101,9 +101,9 @@ def get_folders(config: Config) -> List[Folder]:
 
     :calls: `GET /repos/{owner}/{repo}/contents/{path} for each folder starting from root
     """
-    g = Github(config.access_token)
-    repo = g.get_repo(config.repo)
-    branch = config.branch or GithubObject.NotSet
+    g = Github(config.options["access_token"])
+    repo = g.get_repo(config.options["repo"])
+    branch = config.options.get("branch") or GithubObject.NotSet
 
     def get_subfolders(path) -> List[Folder]:
         contents = repo.get_contents(path, ref=branch)

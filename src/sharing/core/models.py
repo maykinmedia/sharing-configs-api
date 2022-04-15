@@ -8,6 +8,7 @@ from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from .constants import ConfigTypes, PermissionModes
+from .handlers import registry
 
 
 class ClientAuth(models.Model):
@@ -94,6 +95,17 @@ class Config(models.Model):
         self.label = slugify(self.label)
 
         super().save(**kwargs)
+
+    def clean(self):
+        super().clean()
+
+        handler = self.get_handler()
+        options_serializer = handler.configuration_options(self.options)
+        if not options_serializer.is_valid():
+            raise ValidationError({"options": options_serializer.errors})
+
+    def get_handler(self):
+        return registry[self.type]
 
 
 class RootPathConfig(models.Model):
