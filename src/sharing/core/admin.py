@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.db import models
 
 from .models import ClientAuth, Config, RootPathConfig
+from .widgets import ConfigOptionsWidget
 
 
 @admin.register(ClientAuth)
@@ -23,9 +25,9 @@ class ConfigAdmin(admin.ModelAdmin):
     search_fields = ("label",)
 
     # detail
+    formfield_overrides = {models.JSONField: {"widget": ConfigOptionsWidget}}
     inlines = [RootPathConfigInline]
 
-    # todo display and/or validate options based on serializer class
     def display_client_auths(self, obj):
         return ", ".join(c.organization for c in obj.client_auths.all())
 

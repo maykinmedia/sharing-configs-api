@@ -1,0 +1,10 @@
+<div id="json-editor" data-type-field-id="{{ type_field_id }}" data-input-field-id="{{ widget.attrs.id }}">{# JS managed #}</div>
+
+{{ json_schemas|json_script:"jsonSchemas" }}
+
+<textarea name="{{ widget.name }}"
+          cols="40" rows="10"
+          required=""
+          id="{{ widget.attrs.id }}"
+{#          style="display: none"#}
+>{{ widget.value|safe }}</textarea>
