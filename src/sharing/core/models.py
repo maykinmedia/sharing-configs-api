@@ -69,7 +69,6 @@ class Config(models.Model):
     type = models.CharField(
         _("type"),
         max_length=50,
-        default="debug",
         help_text=_("Type of the config"),
     )
     options = models.JSONField(

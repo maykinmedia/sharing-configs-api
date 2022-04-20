@@ -14,7 +14,6 @@ class Migration(migrations.Migration):
             model_name="config",
             name="type",
             field=models.CharField(
-                default="debug",
                 help_text="Type of the config",
                 max_length=50,
                 verbose_name="type",

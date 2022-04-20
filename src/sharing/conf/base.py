@@ -121,6 +121,7 @@ INSTALLED_APPS = [
     # Project applications.
     "sharing.accounts",
     "sharing.api",
+    "sharing.contrib.debug",
     "sharing.contrib.github",
     "sharing.core",
     "sharing.utils",
