@@ -7,7 +7,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-from .constants import ConfigTypes, PermissionModes
+from .constants import PermissionModes
 from .handlers import registry
 
 
@@ -69,8 +69,7 @@ class Config(models.Model):
     type = models.CharField(
         _("type"),
         max_length=50,
-        choices=ConfigTypes.choices,
-        default=ConfigTypes.github,
+        default="debug",
         help_text=_("Type of the config"),
     )
     options = models.JSONField(
@@ -100,12 +99,12 @@ class Config(models.Model):
         super().clean()
 
         handler = self.get_handler()
-        options_serializer = handler.configuration_options(self.options)
+        options_serializer = handler.configuration_options(data=self.options)
         if not options_serializer.is_valid():
             raise ValidationError({"options": options_serializer.errors})
 
     def get_handler(self):
-        return registry[self.type]
+        return registry[self.type](self)
 
 
 class RootPathConfig(models.Model):

@@ -1,6 +1,6 @@
 import factory
 
-from sharing.core.constants import ConfigTypes, PermissionModes
+from sharing.core.constants import PermissionModes
 
 
 class ClientAuthFactory(factory.django.DjangoModelFactory):
@@ -13,7 +13,7 @@ class ClientAuthFactory(factory.django.DjangoModelFactory):
 
 class ConfigFactory(factory.django.DjangoModelFactory):
     label = factory.Faker("word")
-    type = ConfigTypes.debug
+    type = "debug"
 
     class Meta:
         model = "core.Config"

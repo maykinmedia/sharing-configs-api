@@ -5,8 +5,6 @@ from django.core.exceptions import ImproperlyConfigured
 
 from rest_framework import serializers
 
-from sharing.core.constants import ConfigTypes
-
 from .data import Folder
 from .serializers import JsonSchemaSerializer
 
@@ -78,7 +76,7 @@ class BaseHandler:
         raise ImproperlyConfigured("'list_folders' method should be defined")
 
 
-class DebugHandler(BaseHandler, type=ConfigTypes.debug):
+class DebugHandler(BaseHandler, type="debug"):
     """handler used for testing, It downloads the example file and uploads file into stdout"""
 
     def download(self, folder: str, filename: str):

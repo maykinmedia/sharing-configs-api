@@ -6,7 +6,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from sharing.core.constants import ConfigTypes, PermissionModes
+from sharing.core.constants import PermissionModes
 from sharing.core.exceptions import HandlerException, HandlerObjectNotFound
 
 from .factories import ConfigFactory, RootPathConfigFactory
@@ -48,8 +48,8 @@ class OtherErrorHandler:
         raise HandlerException("other error")
 
 
-not_found_registry = {ConfigTypes.debug: NotFoundHandler}
-other_error_registry = {ConfigTypes.debug: OtherErrorHandler}
+not_found_registry = {"debug": NotFoundHandler}
+other_error_registry = {"debug": OtherErrorHandler}
 
 
 class DownloadFileTests(TokenAuthMixin, APITestCase):
@@ -75,13 +75,13 @@ class DownloadFileTests(TokenAuthMixin, APITestCase):
         self.assertEqual(response["Content-Type"], "application/octet-stream")
         self.assertEqual(response.content, b"example file")
 
-    @patch.dict("sharing.api.views.registry", not_found_registry)
+    @patch.dict("sharing.core.models.registry", not_found_registry)
     def test_download_file_not_found(self):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    @patch.dict("sharing.api.views.registry", other_error_registry)
+    @patch.dict("sharing.core.models.registry", other_error_registry)
     def test_download_file_error(self):
         response = self.client.get(self.url)
 
@@ -125,7 +125,7 @@ class UploadFileTests(TokenAuthMixin, APITestCase):
             },
         )
 
-    @patch.dict("sharing.api.views.registry", not_found_registry)
+    @patch.dict("sharing.core.models.registry", not_found_registry)
     def test_upload_file_not_found(self):
         data = {
             "filename": "somefile.txt",
@@ -137,7 +137,7 @@ class UploadFileTests(TokenAuthMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    @patch.dict("sharing.api.views.registry", other_error_registry)
+    @patch.dict("sharing.core.models.registry", other_error_registry)
     def test_upload_file_error(self):
         data = {
             "filename": "somefile.txt",
@@ -189,13 +189,13 @@ class ListFilesTests(TokenAuthMixin, APITestCase):
             },
         )
 
-    @patch.dict("sharing.api.views.registry", not_found_registry)
+    @patch.dict("sharing.core.models.registry", not_found_registry)
     def test_list_files_not_found(self):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    @patch.dict("sharing.api.views.registry", other_error_registry)
+    @patch.dict("sharing.core.models.registry", other_error_registry)
     def test_list_files_error(self):
         response = self.client.get(self.url)
 
@@ -236,7 +236,7 @@ class ListFoldersTests(TokenAuthMixin, APITestCase):
             },
         )
 
-    @patch.dict("sharing.api.views.registry", other_error_registry)
+    @patch.dict("sharing.core.models.registry", other_error_registry)
     def test_list_folders_error(self):
         response = self.client.get(self.url)
 

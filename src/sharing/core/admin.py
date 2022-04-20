@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db import models
 
+from .handlers import registry
 from .models import ClientAuth, Config, RootPathConfig
 from .widgets import ConfigOptionsWidget
 
@@ -32,3 +33,9 @@ class ConfigAdmin(admin.ModelAdmin):
         return ", ".join(c.organization for c in obj.client_auths.all())
 
     display_client_auths.short_description = "client_auths"
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == "type":
+            db_field.choices = [(key, key) for key in registry.keys()]
+
+        return super().formfield_for_dbfield(db_field, request, **kwargs)

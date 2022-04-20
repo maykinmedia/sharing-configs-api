@@ -1,11 +1,10 @@
 from django.db import migrations
-from ..constants import ConfigTypes
 
 
 def move_github_options_to_json(apps, _):
     Config = apps.get_model("core", "Config")
 
-    for config in Config.objects.filter(type=ConfigTypes.github):
+    for config in Config.objects.filter(type="github"):
         config.options = {
             "access_token": config.access_token,
             "repo": config.repo,
@@ -17,7 +16,7 @@ def move_github_options_to_json(apps, _):
 def move_json_to_github_options(apps, _):
     Config = apps.get_model("core", "Config")
 
-    for config in Config.objects.filter(type=ConfigTypes.github):
+    for config in Config.objects.filter(type="github"):
         config.access_token = config.options["access_token"]
         config.repo = config.options["repo"]
         config.branch = config.options.get("branch", "")
