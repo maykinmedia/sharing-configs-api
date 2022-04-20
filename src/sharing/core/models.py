@@ -7,6 +7,8 @@ from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
+from sharing.utils.exceptions import get_error_list
+
 from .constants import PermissionModes
 from .handlers import registry
 
@@ -100,7 +102,9 @@ class Config(models.Model):
         handler = self.get_handler()
         options_serializer = handler.configuration_options(data=self.options)
         if not options_serializer.is_valid():
-            raise ValidationError({"options": options_serializer.errors})
+            raise ValidationError(
+                {"options": get_error_list(options_serializer.errors)}
+            )
 
     def get_handler(self):
         return registry[self.type](self)
