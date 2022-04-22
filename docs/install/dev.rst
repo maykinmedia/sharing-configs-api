@@ -11,7 +11,7 @@ Quick start
 
 #. Get the code::
 
-    $ git clone git@bitbucket.org:maykinmedia/sharing.git
+    $ git clone git@github.com:maykinmedia/sharing-configs-api.git sharing
     $ cd sharing
 
 #. Bootstrap the virtual environment and install all required libraries. The
