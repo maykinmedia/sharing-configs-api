@@ -167,11 +167,8 @@ The easiest way to get the project started is by using `Docker Compose`_.
 
    .. code-block:: bash
 
-       $ git clone git@github.com:maykinmedia/sharing.git sharing
-       Cloning into 'sharing'...
-       ...
-
-       $ cd sharing
+       $ git clone git@github.com:maykinmedia/sharing-configs-api.git
+       $ cd sharing-configs-api
 
 2. Start the database and web services:
 
