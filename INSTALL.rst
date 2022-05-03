@@ -44,8 +44,8 @@ development machine.
 
    .. code-block:: bash
 
-       $ git clone git@github.com:maykinmedia/sharing-configs-api.git sharing
-       $ cd sharing
+       $ git clone git@github.com:maykinmedia/sharing-configs-api.git
+       $ cd sharing-configs-api
 
 3. Install all required (backend) libraries.
    **Tip:** You can use the ``bootstrap.py`` script to install the requirements
