@@ -1,9 +1,9 @@
 from github import GithubException, UnknownObjectException
 
-from sharing.core.constants import ConfigTypes
 from sharing.core.exceptions import HandlerException, HandlerObjectNotFound
 from sharing.core.handlers import BaseHandler
 
+from .serializers import GitHubOptionsSerializer
 from .service import (
     create_file,
     get_file,
@@ -32,7 +32,9 @@ def github_error_handler(func):
     return wrapper
 
 
-class GitHubHandler(BaseHandler, type=ConfigTypes.github):
+class GitHubHandler(BaseHandler, type="github"):
+    configuration_options = GitHubOptionsSerializer
+
     @github_error_handler
     def download(self, folder: str, filename: str) -> bytes:
         github_file = get_file(self.config, folder, filename)

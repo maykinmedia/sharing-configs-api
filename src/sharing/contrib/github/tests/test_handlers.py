@@ -4,7 +4,7 @@ import requests_mock
 
 from sharing.core.data import Folder
 from sharing.core.exceptions import HandlerException, HandlerObjectNotFound
-from sharing.tests.factories import ConfigFactory, ConfigTypes
+from sharing.tests.factories import ConfigFactory
 
 from ..handlers import GitHubHandler
 from .utils import (
@@ -23,7 +23,7 @@ class GitHubHandlerTests(TestCase):
         super().setUp()
 
         self.config = ConfigFactory.create(
-            type=ConfigTypes.github, access_token="12345", repo="some/repo"
+            type="github", options={"access_token": "12345", "repo": "some/repo"}
         )
         self.handler = GitHubHandler(config=self.config)
         self.folder = "some/folder"
@@ -31,12 +31,14 @@ class GitHubHandlerTests(TestCase):
 
     def test_download_file(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
-            json=mock_github_repo(name=self.config.repo),
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
+            json=mock_github_repo(name=self.config.options["repo"]),
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}/{self.filename}",
-            json=mock_github_file(self.folder, self.filename, repo=self.config.repo),
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/{self.folder}/{self.filename}",
+            json=mock_github_file(
+                self.folder, self.filename, repo=self.config.options["repo"]
+            ),
         )
 
         file_content = self.handler.download(self.folder, self.filename)
@@ -45,7 +47,7 @@ class GitHubHandlerTests(TestCase):
 
     def test_download_file_not_found(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
             status_code=404,
             json={"message": "Not Found"},
         )
@@ -54,7 +56,7 @@ class GitHubHandlerTests(TestCase):
 
     def test_download_file_error(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
             status_code=400,
             json={"message": "Client Error"},
         )
@@ -63,12 +65,16 @@ class GitHubHandlerTests(TestCase):
 
     def test_list_files(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
-            json=mock_github_repo(name=self.config.repo),
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
+            json=mock_github_repo(name=self.config.options["repo"]),
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}",
-            json=[mock_github_file(self.folder, "somefile.txt", repo=self.config.repo)],
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/{self.folder}",
+            json=[
+                mock_github_file(
+                    self.folder, "somefile.txt", repo=self.config.options["repo"]
+                )
+            ],
         )
 
         files = self.handler.list_files(self.folder)
@@ -77,7 +83,7 @@ class GitHubHandlerTests(TestCase):
 
     def test_list_files_not_found(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
             status_code=404,
             json={"message": "Not Found"},
         )
@@ -86,7 +92,7 @@ class GitHubHandlerTests(TestCase):
 
     def test_list_files_error(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
             status_code=400,
             json={"message": "Client Error"},
         )
@@ -95,19 +101,21 @@ class GitHubHandlerTests(TestCase):
 
     def test_upload_file(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
-            json=mock_github_repo(name=self.config.repo),
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
+            json=mock_github_repo(name=self.config.options["repo"]),
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/{self.folder}",
             json=[
-                mock_github_file(self.folder, "otherfile.txt", repo=self.config.repo)
+                mock_github_file(
+                    self.folder, "otherfile.txt", repo=self.config.options["repo"]
+                )
             ],
         )
         m.put(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}/{self.filename}",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/{self.folder}/{self.filename}",
             json=mock_github_update_file(
-                self.folder, self.filename, repo=self.config.repo
+                self.folder, self.filename, repo=self.config.options["repo"]
             ),
         )
         self.handler.upload(
@@ -119,7 +127,7 @@ class GitHubHandlerTests(TestCase):
 
     def test_upload_file_not_found(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
             status_code=404,
             json={"message": "Not Found"},
         )
@@ -133,7 +141,7 @@ class GitHubHandlerTests(TestCase):
 
     def test_upload_file_error(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
             status_code=400,
             json={"message": "Client Error"},
         )
@@ -147,21 +155,27 @@ class GitHubHandlerTests(TestCase):
 
     def test_upload_file_overwrite_existed(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
-            json=mock_github_repo(name=self.config.repo),
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
+            json=mock_github_repo(name=self.config.options["repo"]),
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}",
-            json=[mock_github_file(self.folder, "somefile.txt", repo=self.config.repo)],
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/{self.folder}",
+            json=[
+                mock_github_file(
+                    self.folder, "somefile.txt", repo=self.config.options["repo"]
+                )
+            ],
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}/{self.filename}",
-            json=mock_github_file(self.folder, "somefile.txt", repo=self.config.repo),
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/{self.folder}/{self.filename}",
+            json=mock_github_file(
+                self.folder, "somefile.txt", repo=self.config.options["repo"]
+            ),
         )
         m.put(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}/{self.filename}",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/{self.folder}/{self.filename}",
             json=mock_github_update_file(
-                self.folder, self.filename, repo=self.config.repo
+                self.folder, self.filename, repo=self.config.options["repo"]
             ),
         )
 
@@ -175,12 +189,16 @@ class GitHubHandlerTests(TestCase):
 
     def test_upload_file_not_overwrite_existed(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
-            json=mock_github_repo(name=self.config.repo),
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
+            json=mock_github_repo(name=self.config.options["repo"]),
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/{self.folder}",
-            json=[mock_github_file(self.folder, "somefile.txt", repo=self.config.repo)],
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/{self.folder}",
+            json=[
+                mock_github_file(
+                    self.folder, "somefile.txt", repo=self.config.options["repo"]
+                )
+            ],
         )
         with self.assertRaises(HandlerException):
             self.handler.upload(
@@ -192,16 +210,20 @@ class GitHubHandlerTests(TestCase):
 
     def test_list_folders(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
-            json=mock_github_repo(name=self.config.repo),
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
+            json=mock_github_repo(name=self.config.options["repo"]),
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/",
-            json=[mock_github_folder("some", repo=self.config.repo)],
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/",
+            json=[mock_github_folder("some", repo=self.config.options["repo"])],
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/some",
-            json=[mock_github_file(self.folder, "somefile.txt", repo=self.config.repo)],
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/some",
+            json=[
+                mock_github_file(
+                    self.folder, "somefile.txt", repo=self.config.options["repo"]
+                )
+            ],
         )
 
         folders = self.handler.list_folders()
@@ -210,24 +232,28 @@ class GitHubHandlerTests(TestCase):
 
     def test_list_folders_with_subfolders(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
-            json=mock_github_repo(name=self.config.repo),
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
+            json=mock_github_repo(name=self.config.options["repo"]),
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/",
-            json=[mock_github_folder("some", repo=self.config.repo)],
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/",
+            json=[mock_github_folder("some", repo=self.config.options["repo"])],
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/some",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/some",
             json=[
                 mock_github_folder(
-                    "subfolder", repo=self.config.repo, path="some/subfolder"
+                    "subfolder", repo=self.config.options["repo"], path="some/subfolder"
                 )
             ],
         )
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}/contents/some/subfolder",
-            json=[mock_github_file("subfolder", "somefile.txt", repo=self.config.repo)],
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}/contents/some/subfolder",
+            json=[
+                mock_github_file(
+                    "subfolder", "somefile.txt", repo=self.config.options["repo"]
+                )
+            ],
         )
 
         folders = self.handler.list_folders()
@@ -239,7 +265,7 @@ class GitHubHandlerTests(TestCase):
 
     def test_list_folders_error(self, m):
         m.get(
-            f"{GITHUB_BASE_URL}repos/{self.config.repo}",
+            f"{GITHUB_BASE_URL}repos/{self.config.options['repo']}",
             status_code=400,
             json={"message": "Client Error"},
         )

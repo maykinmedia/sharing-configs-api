@@ -7,7 +7,10 @@ from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-from .constants import ConfigTypes, PermissionModes
+from sharing.utils.exceptions import get_error_list
+
+from .constants import PermissionModes
+from .handlers import registry
 
 
 class ClientAuth(models.Model):
@@ -68,29 +71,17 @@ class Config(models.Model):
     type = models.CharField(
         _("type"),
         max_length=50,
-        choices=ConfigTypes.choices,
-        default=ConfigTypes.github,
         help_text=_("Type of the config"),
     )
-    access_token = models.CharField(
-        _("access token"),
-        max_length=250,
+    options = models.JSONField(
+        _("options"),
+        default=dict,
         blank=True,
+        null=True,
         help_text=_(
-            "Access token for GitHub authorization. Can be generated at https://github.com/settings/tokens"
+            "Configuration-specific options. The shape of the field is described "
+            "in the `handler.configuration_options` "
         ),
-    )
-    repo = models.CharField(
-        _("repo"),
-        max_length=250,
-        blank=True,
-        help_text=_("GitHub repository in the format {owner}/{name}"),
-    )
-    branch = models.CharField(
-        _("branch"),
-        max_length=250,
-        blank=True,
-        help_text=_("GitHub branch to use, if empty the default branch is used"),
     )
 
     class Meta:
@@ -108,16 +99,15 @@ class Config(models.Model):
     def clean(self):
         super().clean()
 
-        if self.type == ConfigTypes.github:
-            if not self.access_token:
-                raise ValidationError(
-                    {"access_token": "This field is required for GitHub config"}
-                )
+        handler = self.get_handler()
+        options_serializer = handler.configuration_options(data=self.options)
+        if not options_serializer.is_valid():
+            raise ValidationError(
+                {"options": get_error_list(options_serializer.errors)}
+            )
 
-            if not self.repo:
-                raise ValidationError(
-                    {"repo": "This field is required for GitHub config"}
-                )
+    def get_handler(self):
+        return registry[self.type](self)
 
 
 class RootPathConfig(models.Model):

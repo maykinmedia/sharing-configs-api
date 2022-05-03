@@ -1,14 +1,11 @@
-import logging
-from typing import List
+from typing import List, Type
 
 from django.core.exceptions import ImproperlyConfigured
 
-from sharing.core.constants import ConfigTypes
-from sharing.core.models import Config
+from rest_framework import serializers
 
 from .data import Folder
-
-logger = logging.getLogger(__name__)
+from .serializers import JsonSchemaSerializer
 
 registry = {}
 
@@ -16,9 +13,16 @@ registry = {}
 class BaseHandler:
     """
     Base class for Sharing Config handlers.
+    A handler class is the combination of a handler callbacks and a set of options that
+    are handler specific
     """
 
-    def __init__(self, config: Config):
+    configuration_options: Type[serializers.Serializer] = JsonSchemaSerializer
+    """
+    A serializer class describing the handler-specific configuration options.
+    """
+
+    def __init__(self, config):
         self.config = config
 
     def __init_subclass__(cls, /, type: str, **kwargs):
@@ -67,34 +71,3 @@ class BaseHandler:
         :raise: HandlerException
         """
         raise ImproperlyConfigured("'list_folders' method should be defined")
-
-
-class DebugHandler(BaseHandler, type=ConfigTypes.debug):
-    """handler used for testing, It downloads the example file and uploads file into stdout"""
-
-    def download(self, folder: str, filename: str):
-        return b"example file"
-
-    def upload(
-        self,
-        folder: str,
-        filename: str,
-        content: bytes,
-        comment: str,
-        overwrite: bool = False,
-    ):
-        logger.info(f"DebugHandler: {comment}")
-
-    def list_files(self, folder: str):
-        return ["example_file.txt"]
-
-    def list_folders(self):
-        return [
-            Folder(
-                name="example_folder",
-                children=[
-                    Folder(name="example_subfolder"),
-                ],
-            ),
-            Folder(name="example_other_folder"),
-        ]

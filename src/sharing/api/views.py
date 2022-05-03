@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from sharing.core.constants import PermissionModes
-from sharing.core.handlers import BaseHandler, registry
+from sharing.core.handlers import BaseHandler
 from sharing.core.models import Config
 from sharing.core.permissions import IsTokenAuthenticated, RootPathPermission
 from sharing.utils.mixins import PaginationMixin
@@ -35,7 +35,7 @@ class ConfigMixin:
 
     def get_handler(self) -> BaseHandler:
         config = self.get_config()
-        return registry[config.type](config)
+        return config.get_handler()
 
 
 class FileDetailView(ConfigMixin, APIView):

@@ -20,6 +20,7 @@
   "license": "UNLICENSED",
   "homepage": "https://maykinmedia.nl",
   "dependencies": {
+    "@json-editor/json-editor": "latest",
     "microscope-sass": "latest"
   },
   "devDependencies": {

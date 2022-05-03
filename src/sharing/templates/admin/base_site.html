@@ -41,3 +41,8 @@
 
 {% block nav-global %}
 {% endblock %}
+
+{% block footer %}
+    {{ block.super }}
+    <script src="{% static 'bundles/sharing-js.js' %}"></script>
+{% endblock %}
