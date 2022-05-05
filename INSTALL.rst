@@ -18,7 +18,7 @@ Prerequisites
 
 You need the following libraries and/or programs:
 
-* `Python`_ 3.6 or above
+* `Python`_ 3.9 or above
 * Python `Virtualenv`_ and `Pip`_
 * `PostgreSQL`_ 10 or above
 * `Node.js`_
@@ -44,11 +44,11 @@ development machine.
 
    .. code-block:: bash
 
-       $ git clone git@bitbucket.org:maykinmedia/sharing-configs-api.git
-       $ cd sharing
+       $ git clone git@github.com:maykinmedia/sharing-configs-api.git
+       $ cd sharing-configs-api
 
 3. Install all required (backend) libraries.
-   **Tip:** You can use the ``bootstrap.py`` script to install the requiments
+   **Tip:** You can use the ``bootstrap.py`` script to install the requirements
    and set the proper settings in ``manage.py``. Or, perform the steps
    manually:
 
@@ -152,6 +152,11 @@ file or as part of the ``(post)activate`` of your virtualenv.
   logger and will send errors/logging to Sentry. If unset, Sentry SDK will be
   disabled.
 
+* ``TWO_FACTOR_FORCE_OTP_ADMIN``: Enforce 2 Factor Authentication in the admin or not.
+  Defaults to ``True``.
+* ``TWO_FACTOR_PATCH_ADMIN``: Whether to use the 2 Factor Authentication login flow for
+  the admin or not. Defaults to ``True``.
+
 Docker
 ======
 
@@ -162,11 +167,8 @@ The easiest way to get the project started is by using `Docker Compose`_.
 
    .. code-block:: bash
 
-       $ git clone git@bitbucket.org:maykinmedia/sharing.git
-       Cloning into 'sharing'...
-       ...
-
-       $ cd sharing
+       $ git clone git@github.com:maykinmedia/sharing-configs-api.git
+       $ cd sharing-configs-api
 
 2. Start the database and web services:
 
@@ -194,8 +196,6 @@ The easiest way to get the project started is by using `Docker Compose`_.
        ...
        Superuser created successfully.
 
-       $ docker exec -it sharing_web_1 /app/src/manage.py loaddata admin_index groups
-       Installed 5 object(s) from 2 fixture(s)
 
 4. Point your browser to ``http://localhost:8000/`` to access the project's
    management interface with the credentials used in step 3.
@@ -239,59 +239,6 @@ all settings.
         sharing
 
     $ docker exec -it sharing /app/src/manage.py createsuperuser
-
-Building and publishing the image
----------------------------------
-
-Using ``bin/release-docker-image``, you can easily build and tag the image.
-
-The script is based on git branches and tags - if you're on the ``master``
-branch and the current ``HEAD`` is tagged, the tag will be used as
-``RELEASE_TAG`` and the image will be pushed. If you want to push the image
-without a git tag, you can use the ``RELEASE_TAG`` envvar.
-
-The image will only be pushed if the ``JOB_NAME`` envvar is set. The image
-will always be built, even if no envvar is set. The default release tag is
-``latest``.
-
-Example usage:
-
-.. code-block:: bash
-
-    JOB_NAME=publish RELEASE_TAG=dev ./bin/release-docker-image.sh
-
-
-Staging and production
-======================
-
-Ansible is used to deploy test, staging and production servers. It is assumed
-the target machine has a clean `Debian`_ installation.
-
-1. Make sure you have `Ansible`_ installed (globally or in the virtual
-   environment):
-
-   .. code-block:: bash
-
-       $ pip install ansible
-
-2. Navigate to the project directory, and install the Maykin deployment
-   submodule if you haven't already:
-
-   .. code-block:: bash
-
-       $ git submodule update --init
-
-3. Run the Ansible playbook to provision a clean Debian machine:
-
-   .. code-block:: bash
-
-       $ cd deployment
-       $ ansible-playbook <test/staging/production>.yml
-
-For more information, see the ``README`` file in the deployment directory.
-
-.. _Debian: https://www.debian.org/
-.. _Ansible: https://pypi.org/project/ansible/
 
 
 Settings

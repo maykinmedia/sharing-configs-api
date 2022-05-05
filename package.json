@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/maykinmedia/sharing.git"
+    "url": "git+ssh://git@github.com/maykinmedia/sharing-configs-api.git"
   },
   "author": "Maykin Media",
   "license": "UNLICENSED",

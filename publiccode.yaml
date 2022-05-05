@@ -1,0 +1,79 @@
+# This repository adheres to the publiccode.yml standard by including this
+# metadata file that makes public software easily discoverable.
+# More info at https://github.com/italia/publiccode.yml
+
+publiccodeYmlVersion: '0.2'
+
+name: Sharing Configs API
+url: 'http://github.com/maykinmedia/sharing-configs-api.git'
+softwareType: standalone/backend
+softwareVersion: 0.1.0
+releaseDate: 't.b.d.'
+platforms:
+  - web
+  - linux
+  - windows
+  - mac
+
+developmentStatus: beta
+
+description:
+  en:
+    shortDescription: Provides API to download and upload files using different backends.
+    documentation: 'https://github.com/maykinmedia/sharing-configs-api/blob/master/README.rst'
+    features:
+      - Download and upload files via API
+      - Plug different file storage backends
+    genericName: API component
+    longDescription: >
+      Using Sharing Configs API administrators can easily configure backends used  
+      to store the files. They also can fine-tune the access to files using permissions.
+      
+      The API clients can easily upload and download files and explore the folder 
+      structure via endpoints. 
+      
+      The API backend is extensible, i.e. developers can create plugins to use other 
+      storage backends.
+
+legal:
+  license: EUPL-1.2
+  mainCopyrightOwner: Maykin Media
+  repoOwner: Maykin Media
+
+dependsOn:
+  open:
+    - name: PostgreSQL
+      optional: false
+      versionMin: '10.0'
+    - name: Docker
+      optional: true
+      versionMin: '18.0'
+
+inputTypes:
+  - application/json
+
+outputTypes:
+  - application/json
+  - text/html
+
+intendedAudience:
+  countries:
+    - nl
+  scope:
+    - government
+
+localisation:
+  availableLanguages:
+    - nl
+    - en
+  localisationReady: false
+
+maintenance:
+  type: contract
+  contractors:
+  - name: Maykin Media
+    email: info@maykinmedia.nl
+    website: https://www.maykinmedia.nl/
+  contacts:
+  - name: Joeri Bekker
+    affiliation: Maykin Media
