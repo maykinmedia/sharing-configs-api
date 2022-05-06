@@ -29,6 +29,22 @@ structure via endpoints.
 The API backend is extensible, i.e. developers can create plugins to use other
 storage backends.
 
+API specification
+=================
+
+|lint-oas| |generate-sdks| |generate-postman-collection|
+
+==============  ==============  =============================
+Version         Release date    API specification
+==============  ==============  =============================
+latest          n/a             `ReDoc <https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/maykinmedia/sharing-configs-api/master/src/sharing/openapi.yaml>`_,
+                                `Swagger <https://petstore.swagger.io/?url=https://raw.githubusercontent.com/maykinmedia/sharing-configs-api/master/src/sharing/openapi.yaml>`_,
+==============  ==============  =============================
+
+Previous versions are supported for 6 month after the next version is released.
+
+See: `All versions and changes <https://github.com/maykinmedia/sharing-configs-api/blob/master/CHANGELOG.rst>`_
+
 Documentation
 =============
 
@@ -64,6 +80,18 @@ References
 
 .. |python-versions| image:: https://img.shields.io/badge/python-3.9%2B-blue.svg
     :alt: Supported Python version
+
+.. |lint-oas| image:: https://github.com/maykinmedia/objects-api/workflows/lint-oas/badge.svg
+    :alt: Lint OAS
+    :target: https://github.com/maykinmedia/sharing-configs-api/actions?query=workflow%3Alint-oas
+
+.. |generate-sdks| image:: https://github.com/maykinmedia/objects-api/workflows/generate-sdks/badge.svg
+    :alt: Generate SDKs
+    :target: https://github.com/maykinmedia/sharing-configs-api/actions?query=workflow%3Agenerate-sdks
+
+.. |generate-postman-collection| image:: https://github.com/maykinmedia/objects-api/workflows/generate-postman-collection/badge.svg
+    :alt: Generate Postman collection
+    :target: https://github.com/maykinmedia/sharing-configs-api/actions?query=workflow%3Agenerate-postman-collection
 
 
 .. _Maykin Media B.V.: https://www.maykinmedia.nl
