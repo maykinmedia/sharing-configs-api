@@ -45,7 +45,7 @@ deprecated==1.2.13
     #   -r requirements/base.txt
     #   pygithub
     #   redis
-django==3.2.12
+django==3.2.13
     # via
     #   -c requirements/base.txt
     #   -r requirements/base.txt

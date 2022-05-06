@@ -70,7 +70,7 @@ deprecated==1.2.13
     #   -r requirements/ci.txt
     #   pygithub
     #   redis
-django==3.2.12
+django==3.2.13
     # via
     #   -c requirements/ci.txt
     #   -r requirements/ci.txt

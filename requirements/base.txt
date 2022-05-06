@@ -21,7 +21,7 @@ deprecated==1.2.13
     # via
     #   pygithub
     #   redis
-django==3.2.12
+django==3.2.13
     # via
     #   -r requirements/base.in
     #   django-axes
