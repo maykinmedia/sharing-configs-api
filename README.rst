@@ -7,7 +7,7 @@ Sharing Configs API
 :Keywords: ``django``, ``github``
 :PythonVersion: 3.9
 
-|build-status| |docker| |black| |python-versions|
+|build-status| |coverage| |docker| |black| |python-versions|
 
 API to share configurations using GitHub
 
@@ -69,6 +69,10 @@ References
 .. |build-status| image:: https://github.com/maykinmedia/sharing-configs-api/actions/workflows/ci.yml/badge.svg?branch=master
     :alt: Build status
     :target: https://github.com/maykinmedia/sharing-configs-api/actions/workflows/ci.yml?branch=master
+
+.. |coverage| image:: https://codecov.io/github/maykinmedia/sharing-configs-api/branch/master/graphs/badge.svg?branch=master
+    :alt: Coverage
+    :target: https://codecov.io/gh/maykinmedia/sharing-configs-api
 
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :alt: Code style
