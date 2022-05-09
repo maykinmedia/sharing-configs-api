@@ -23,4 +23,9 @@ SPECTACULAR_SETTINGS = {
     "VERSION": API_VERSION,
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_NO_READ_ONLY_REQUIRED": True,
+    "CONTACT": {"url": "https://github.com/maykinmedia/sharing-configs-api"},
+    "TAGS": [{"name": "files"}, {"name": "configs"}],
+    "SCHEMA_PATH_PREFIX": "/api/v1",
+    "SCHEMA_PATH_PREFIX_TRIM": True,
+    "SERVERS": [{"url": "/api/v1"}],
 }
