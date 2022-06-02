@@ -218,7 +218,7 @@ pygithub==1.55
     # via
     #   -c requirements/base.txt
     #   -r requirements/base.txt
-pyjwt==2.3.0
+pyjwt==2.4.0
     # via
     #   -c requirements/base.txt
     #   -r requirements/base.txt
